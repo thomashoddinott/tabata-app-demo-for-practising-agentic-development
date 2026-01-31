@@ -1,0 +1,6 @@
+export const TABATA_CONFIG = {
+  PREPARE_DURATION: 10,
+  WORK_DURATION: 20,
+  REST_DURATION: 10,
+  TOTAL_INTERVALS: 8,
+} as const;
