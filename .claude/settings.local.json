@@ -3,7 +3,13 @@
     "allow": [
       "Bash(git fetch:*)",
       "Bash(git rev-list:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm test:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd timer types, constants, and initial useTimer hook\n\nImplements Step 1 & 2 \\(partial\\) of US-1:\n- Create Phase type and TimerState/SessionConfig types\n- Define TABATA_CONFIG constants \\(durations and intervals\\)\n- Implement useTimer hook with initialization test \\(RED-GREEN-REFACTOR\\)\n\nTest coverage:\n- Timer initializes with provided remaining time\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)"
     ]
   }
 }
