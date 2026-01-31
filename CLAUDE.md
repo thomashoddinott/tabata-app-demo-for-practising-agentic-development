@@ -1,0 +1,45 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+This is a Tabata timer application demo repository for practicing agentic development. Currently in initial setup stage with Vite + React boilerplate.
+
+**Tech Stack:**
+- React 19 with TypeScript
+- Vite 7 (build tool with HMR)
+- ESLint with TypeScript, React Hooks, and React Refresh plugins
+
+## Development Commands
+
+```bash
+# Start development server with HMR
+npm run dev
+
+# Build for production (runs TypeScript compiler first)
+npm run build
+
+# Run ESLint
+npm run lint
+
+# Preview production build
+npm run preview
+```
+
+## Architecture Notes
+
+**TypeScript Configuration:**
+- Strict mode enabled with modern ES2022 target
+- Project uses composite TypeScript config (tsconfig.json references tsconfig.app.json and tsconfig.node.json)
+- Compiler enforces strict null checks, no unused locals/parameters, and no fallthrough cases
+
+**Build System:**
+- Vite uses bundler module resolution with `verbatimModuleSyntax`
+- Source files in [src/](src/) directory
+- Entry point: [src/main.tsx](src/main.tsx) → [src/App.tsx](src/App.tsx)
+
+**ESLint:**
+- Flat config format (eslint.config.js)
+- Ignores dist/ directory
+- Applies recommended rules for JS, TypeScript, React Hooks, and React Refresh
