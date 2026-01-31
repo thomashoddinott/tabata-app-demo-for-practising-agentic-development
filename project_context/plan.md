@@ -217,3 +217,102 @@ End of ticket:
   ↓
   Manual review and merge (YOU approve)
 ```
+
+## 🎨 UI Specifications
+
+### Design Inspiration
+
+See [UI screenshots](ui-inspiration/) for reference design from existing Tabata timer app.
+
+### Color Scheme
+
+**Prepare Phase (Rest)**
+- Background: `#22c55e` (green)
+- Text: White (`#ffffff`)
+- High contrast for outdoor visibility
+
+**Work Phase (Exercise)**
+- Background: `#ef4444` (red/orange)
+- Text: White (`#ffffff`)
+- Distinct from prepare phase
+
+**Neutral/Home**
+- Background: Dark (`#1f2937` or similar)
+- Accent: Primary green/red
+
+### Typography
+
+- **Countdown Timer**: 120px font size, bold weight, monospace or sans-serif
+- **Phase Title** ("Prepare"/"Work"): 48px, light weight
+- **Exercise Name**: 32-40px, medium weight, uppercase
+- **Interval List**: 18-20px, normal weight
+- **Progress Indicator**: 16-18px, normal weight
+
+### Layout
+
+**Mobile-First Design**
+- Target width: 320-400px (phone portrait)
+- Full viewport height: `100vh`
+- Centered content with flexbox
+- Fixed bottom controls
+
+**Component Hierarchy**
+```
+┌─────────────────────────────┐
+│  < [Back]  Prepare  [||]    │  ← Header (phase + controls)
+├─────────────────────────────┤
+│                             │
+│        BURPEES              │  ← Exercise Name
+│                             │
+│           4                 │  ← Large Countdown
+│                             │
+├─────────────────────────────┤
+│  1. Prepare: 10             │
+│  2. Work: 60                │  ← Upcoming Intervals List
+│  3. Prepare: 10             │     (scrollable)
+│  4. Work: 60                │
+│  5. Prepare: 10             │
+├─────────────────────────────┤
+│   |◀   1/10  •  1/1   ▶|   │  ← Progress (interval/set)
+└─────────────────────────────┘
+```
+
+### Tailwind Configuration
+
+Custom theme extensions needed:
+```javascript
+// tailwind.config.js
+theme: {
+  extend: {
+    colors: {
+      'prepare': '#22c55e',
+      'work': '#ef4444',
+    }
+  }
+}
+```
+
+## 📝 Placeholder Exercises
+
+Initial set of 10 bodyweight exercises:
+
+```typescript
+export const EXERCISES = [
+  'Push-ups',
+  'Squats',
+  'Burpees',
+  'Lunges',
+  'Mountain Climbers',
+  'Plank',
+  'Jumping Jacks',
+  'High Knees',
+  'Bicycle Crunches',
+  'Jump Squats',
+] as const;
+```
+
+**Notes:**
+- All bodyweight exercises (no equipment needed)
+- Mix of upper body, lower body, and full body movements
+- Suitable for outdoor/minimal equipment environments
+- Can be replaced with user's custom list in future versions
