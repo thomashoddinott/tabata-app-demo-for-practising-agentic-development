@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 📋 Project Plan & User Stories
+
+**IMPORTANT:** Always consult [project_context/plan.md](project_context/plan.md) before starting any work. This file contains:
+- The project goal and vision
+- Thomas's persona (our target user)
+- All user stories organized by epic
+- Feature priorities and scope
+
+When implementing features, building UI, or making architecture decisions, reference the plan to ensure alignment with user needs and project goals.
+
 ## Project Overview
 
 This is a Tabata timer application demo repository for practicing agentic development. Currently in initial setup stage with Vite + React boilerplate.
