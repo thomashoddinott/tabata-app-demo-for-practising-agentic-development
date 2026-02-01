@@ -42,7 +42,7 @@ describe('App - Integration', () => {
     expect(screen.getByText('4')).toBeInTheDocument();
   });
 
-  it('should display exercise during prepare and rest phases, but not during work phase', () => {
+  it('should display exercise during all phases (prepare, work, and rest)', () => {
     render(<App />);
 
     const startButton = screen.getByRole('button', { name: /start/i });
@@ -59,9 +59,12 @@ describe('App - Integration', () => {
       vi.advanceTimersByTime(5000);
     });
 
-    // Should NOT display exercise during work phase
-    expect(screen.queryByTestId('exercise-display')).not.toBeInTheDocument();
+    // Should display exercise during work phase
+    const exerciseDisplayDuringWork = screen.getByTestId('exercise-display');
+    expect(exerciseDisplayDuringWork).toBeInTheDocument();
     expect(screen.getByText('Work')).toBeInTheDocument();
+    // Should show the same exercise
+    expect(exerciseDisplayDuringWork).toHaveTextContent(exerciseText!);
 
     // Advance to rest phase (5s)
     act(() => {

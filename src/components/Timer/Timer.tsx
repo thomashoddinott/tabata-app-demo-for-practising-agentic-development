@@ -10,8 +10,6 @@ export const Timer = () => {
     start();
   }, [start]);
 
-  const showExercise = phase === 'prepare' || phase === 'rest';
-
   const phaseColors = {
     prepare: 'bg-prepare',
     work: 'bg-work',
@@ -30,11 +28,9 @@ export const Timer = () => {
       className={`min-h-screen flex flex-col items-center justify-center ${phaseColors[phase]}`}
     >
       <div className="text-white text-center">
-        {showExercise && (
-          <div data-testid="exercise-display" className="text-4xl font-medium uppercase mb-8">
-            {exercise}
-          </div>
-        )}
+        <div data-testid="exercise-display" className="text-4xl font-medium uppercase mb-8">
+          {exercise}
+        </div>
         <h1 className="text-5xl font-light mb-8">
           {phaseLabels[phase]}
         </h1>
