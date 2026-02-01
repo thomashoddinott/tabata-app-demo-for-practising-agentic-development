@@ -1,12 +1,13 @@
-import { TABATA_CONFIG } from '../constants/tabata';
+import { TABATA_CONFIG, type TabataConfig } from '../constants/tabata';
 import type { Phase, IntervalItem } from '../types/timer';
 
 /**
  * Builds the complete session structure for a Tabata workout.
- * Session structure: 1 prepare + (8 work + 7 rest) = 16 total phases
+ * Session structure: 1 prepare + (N work + N-1 rest) total phases
+ * @param config Optional Tabata configuration (defaults to TABATA_CONFIG)
  * @returns Array of all intervals in the session with sequential numbering
  */
-export const buildSessionIntervals = (): readonly IntervalItem[] => {
+export const buildSessionIntervals = (config: TabataConfig = TABATA_CONFIG): readonly IntervalItem[] => {
   const intervals: IntervalItem[] = [];
   let sequentialNumber = 1;
 
@@ -14,26 +15,26 @@ export const buildSessionIntervals = (): readonly IntervalItem[] => {
   intervals.push({
     sequentialNumber: sequentialNumber++,
     phase: 'prepare',
-    duration: TABATA_CONFIG.PREPARE_DURATION,
+    duration: config.PREPARE_DURATION,
     workInterval: null,
   });
 
-  // 2. Work/Rest cycles (8 rounds)
-  for (let i = 1; i <= TABATA_CONFIG.TOTAL_INTERVALS; i++) {
+  // 2. Work/Rest cycles
+  for (let i = 1; i <= config.TOTAL_INTERVALS; i++) {
     // Work phase
     intervals.push({
       sequentialNumber: sequentialNumber++,
       phase: 'work',
-      duration: TABATA_CONFIG.WORK_DURATION,
+      duration: config.WORK_DURATION,
       workInterval: i,
     });
 
     // Rest phase (skip after last work interval)
-    if (i < TABATA_CONFIG.TOTAL_INTERVALS) {
+    if (i < config.TOTAL_INTERVALS) {
       intervals.push({
         sequentialNumber: sequentialNumber++,
         phase: 'rest',
-        duration: TABATA_CONFIG.REST_DURATION,
+        duration: config.REST_DURATION,
         workInterval: i,
       });
     }

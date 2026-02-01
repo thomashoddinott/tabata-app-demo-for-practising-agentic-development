@@ -31,7 +31,15 @@ vi.mock('../../constants/tabata', () => ({
     REST_DURATION: 5,
     TOTAL_INTERVALS: 10,
   },
+  DEBUG_CONFIG: {
+    PREPARE_DURATION: 3,
+    WORK_DURATION: 3,
+    REST_DURATION: 3,
+    TOTAL_INTERVALS: 10,
+  },
 }));
+
+import { DEBUG_CONFIG, TABATA_CONFIG } from '../../constants/tabata';
 
 vi.mock('../../constants/audio', () => ({
   AUDIO_CONFIG: {
@@ -732,6 +740,23 @@ describe('Timer', () => {
       // During rest after interval 1, should still show 1/10
       const progressIndicator = screen.getByTestId('progress-indicator');
       expect(progressIndicator).toHaveTextContent('1/10');
+    });
+  });
+
+  describe('Debug Mode Indicator', () => {
+    it('should show wrench emoji when debug mode is active', () => {
+      render(<Timer playBeep={mockPlayBeep} config={DEBUG_CONFIG} isDebugMode={true} />);
+
+      const wrenchEmoji = screen.getByTitle('Debug Mode');
+      expect(wrenchEmoji).toBeInTheDocument();
+      expect(wrenchEmoji).toHaveTextContent('🔧');
+    });
+
+    it('should not show wrench emoji when debug mode is inactive', () => {
+      render(<Timer playBeep={mockPlayBeep} config={TABATA_CONFIG} isDebugMode={false} />);
+
+      const wrenchEmoji = screen.queryByTitle('Debug Mode');
+      expect(wrenchEmoji).not.toBeInTheDocument();
     });
   });
 });

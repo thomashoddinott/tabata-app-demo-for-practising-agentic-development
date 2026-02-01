@@ -2,17 +2,19 @@ import { useEffect, useRef, useMemo } from 'react';
 import { useTimer } from '../../hooks/useTimer';
 import { useRandomExercises } from '../../hooks/useRandomExercises';
 import { AUDIO_CONFIG } from '../../constants/audio';
-import { TABATA_CONFIG } from '../../constants/tabata';
+import { TABATA_CONFIG, type TabataConfig } from '../../constants/tabata';
 import { IntervalList } from './IntervalList';
 import { ProgressIndicator } from './ProgressIndicator';
 import { buildSessionIntervals, getCurrentSequentialNumber } from '../../utils/sessionBuilder';
 
 type TimerProps = {
   readonly playBeep: (frequency: number, duration: number, volume?: number) => void;
+  readonly config?: TabataConfig;
+  readonly isDebugMode?: boolean;
 };
 
-export const Timer = ({ playBeep }: TimerProps) => {
-  const { phase, remainingTime, start, currentInterval } = useTimer();
+export const Timer = ({ playBeep, config = TABATA_CONFIG, isDebugMode = false }: TimerProps) => {
+  const { phase, remainingTime, start, currentInterval } = useTimer({ config });
   const prevPhaseRef = useRef(phase);
 
   // Determine which exercise to display based on the phase:
@@ -20,7 +22,7 @@ export const Timer = ({ playBeep }: TimerProps) => {
   // - work: show exercise for current interval
   // - rest: show exercise for next interval (preview what's coming)
   const exerciseInterval = phase === 'prepare' ? 1 : phase === 'rest' ? currentInterval + 1 : currentInterval;
-  const exercise = useRandomExercises(exerciseInterval);
+  const exercise = useRandomExercises(exerciseInterval, config);
 
   useEffect(() => {
     start();
@@ -66,7 +68,7 @@ export const Timer = ({ playBeep }: TimerProps) => {
   };
 
   // Build session structure once
-  const allIntervals = useMemo(() => buildSessionIntervals(), []);
+  const allIntervals = useMemo(() => buildSessionIntervals(config), [config]);
 
   // Calculate current position in session
   const currentSequentialNumber = getCurrentSequentialNumber(phase, currentInterval);
@@ -82,6 +84,12 @@ export const Timer = ({ playBeep }: TimerProps) => {
       data-testid="timer-container"
       className={`min-h-screen flex flex-col ${phaseColors[phase]}`}
     >
+      {/* Debug mode indicator */}
+      {isDebugMode && (
+        <div className="absolute top-4 right-4 text-2xl" title="Debug Mode">
+          🔧
+        </div>
+      )}
       {/* Top section - countdown display */}
       <div className="flex-1 flex items-center justify-center">
         <div className="text-white text-center">
@@ -105,7 +113,7 @@ export const Timer = ({ playBeep }: TimerProps) => {
         />
         <ProgressIndicator
           current={phase === 'prepare' ? 0 : currentInterval}
-          total={TABATA_CONFIG.TOTAL_INTERVALS}
+          total={config.TOTAL_INTERVALS}
         />
       </div>
     </div>

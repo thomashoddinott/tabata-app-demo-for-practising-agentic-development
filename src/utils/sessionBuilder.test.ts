@@ -9,7 +9,15 @@ vi.mock('../constants/tabata', () => ({
     REST_DURATION: 10,
     TOTAL_INTERVALS: 8,
   },
+  DEBUG_CONFIG: {
+    PREPARE_DURATION: 3,
+    WORK_DURATION: 3,
+    REST_DURATION: 3,
+    TOTAL_INTERVALS: 8,
+  },
 }));
+
+import { DEBUG_CONFIG } from '../constants/tabata';
 
 describe('buildSessionIntervals', () => {
   it('should generate 16 total phases for 8 work rounds', () => {
@@ -131,5 +139,36 @@ describe('getCurrentSequentialNumber', () => {
   it('should return 13 for rest after interval 6', () => {
     const result = getCurrentSequentialNumber('rest', 6);
     expect(result).toBe(13);
+  });
+});
+
+describe('buildSessionIntervals with config parameter', () => {
+  it('should use debug config durations when provided', () => {
+    const intervals = buildSessionIntervals(DEBUG_CONFIG);
+
+    // Check prepare duration (3s)
+    expect(intervals[0].duration).toBe(3);
+
+    // Check work durations (3s)
+    const workIntervals = intervals.filter(i => i.phase === 'work');
+    workIntervals.forEach(interval => {
+      expect(interval.duration).toBe(3);
+    });
+
+    // Check rest durations (3s)
+    const restIntervals = intervals.filter(i => i.phase === 'rest');
+    restIntervals.forEach(interval => {
+      expect(interval.duration).toBe(3);
+    });
+  });
+
+  it('should start with prepare phase using debug config', () => {
+    const intervals = buildSessionIntervals(DEBUG_CONFIG);
+    expect(intervals[0]).toEqual({
+      sequentialNumber: 1,
+      phase: 'prepare',
+      duration: 3,
+      workInterval: null,
+    });
   });
 });

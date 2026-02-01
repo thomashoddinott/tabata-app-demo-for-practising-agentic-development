@@ -4,3 +4,12 @@ export const TABATA_CONFIG = {
   REST_DURATION: 10,
   TOTAL_INTERVALS: 10,
 } as const;
+
+export const DEBUG_CONFIG = {
+  PREPARE_DURATION: 5,
+  WORK_DURATION: 5,
+  REST_DURATION: 5,
+  TOTAL_INTERVALS: 10,
+} as const;
+
+export type TabataConfig = typeof TABATA_CONFIG;
