@@ -35,6 +35,31 @@ describe('useTimer', () => {
     expect(result.current.remainingTime).toBe(10);
   });
 
+  it('should expose isActive state that reflects timer running status', () => {
+    const { result } = renderHook(() => useTimer({ initialTime: 10 }));
+    
+    // Initially, timer should not be active
+    expect(result.current.isActive).toBe(false);
+    
+    // After starting, timer should be active
+    act(() => {
+      result.current.start();
+    });
+    expect(result.current.isActive).toBe(true);
+    
+    // After pausing, timer should not be active
+    act(() => {
+      result.current.pause();
+    });
+    expect(result.current.isActive).toBe(false);
+    
+    // Can be restarted
+    act(() => {
+      result.current.start();
+    });
+    expect(result.current.isActive).toBe(true);
+  });
+
   it('should decrement remaining time by 1 second when timer is active', () => {
     const { result } = renderHook(() => useTimer({ initialTime: 10 }));
     

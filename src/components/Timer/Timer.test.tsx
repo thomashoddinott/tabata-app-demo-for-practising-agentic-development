@@ -759,4 +759,278 @@ describe('Timer', () => {
       expect(wrenchEmoji).not.toBeInTheDocument();
     });
   });
+
+  describe('Pause/Resume Integration Tests', () => {
+    it('should handle full cycle: pause during work phase, resume, and complete', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      const pauseResumeButton = screen.getByTestId('pause-resume-button');
+
+      // Advance through prepare phase to work phase
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // Verify in work phase with 5 seconds
+      expect(screen.getByText('Work')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
+
+      // Advance to 3 seconds remaining in work
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(screen.getByText('3')).toBeInTheDocument();
+
+      // Pause the timer
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      // Advance time - timer should NOT countdown while paused
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      // Should still show 3 seconds (did not countdown)
+      expect(screen.getByText('3')).toBeInTheDocument();
+
+      // Resume the timer
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      // Now timer should countdown
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(screen.getByText('2')).toBeInTheDocument();
+
+      // Complete the work phase
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      // Should transition to rest phase
+      expect(screen.getByText('Rest')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
+    it('should handle multiple pause/resume cycles in single session', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      const pauseResumeButton = screen.getByTestId('pause-resume-button');
+
+      // First pause during prepare phase
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(screen.getByText('3')).toBeInTheDocument();
+
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      // Should still be at 3 (paused)
+      expect(screen.getByText('3')).toBeInTheDocument();
+
+      // First resume
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(screen.getByText('2')).toBeInTheDocument();
+
+      // Second pause during prepare phase
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      // Should still be at 2 (paused)
+      expect(screen.getByText('2')).toBeInTheDocument();
+
+      // Second resume
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      // Complete prepare phase
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      // Should transition to work phase
+      expect(screen.getByText('Work')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
+
+      // Third pause during work phase
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+
+      // Should still be at 5 (paused)
+      expect(screen.getByText('5')).toBeInTheDocument();
+
+      // Third resume
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      // Should have counted down
+      expect(screen.getByText('3')).toBeInTheDocument();
+    });
+
+    it('should correctly pause and resume during prepare phase', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      const pauseResumeButton = screen.getByTestId('pause-resume-button');
+
+      // Verify starting in prepare phase
+      expect(screen.getByText('Prepare')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
+
+      // Countdown to 3 seconds
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(screen.getByText('3')).toBeInTheDocument();
+
+      // Pause
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      // Time advances but timer stays paused
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // Should still be at 3 seconds in prepare phase
+      expect(screen.getByText('Prepare')).toBeInTheDocument();
+      expect(screen.getByText('3')).toBeInTheDocument();
+
+      // Resume
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      // Complete the prepare phase
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+
+      // Should transition to work phase correctly
+      expect(screen.getByText('Work')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
+    it('should correctly pause and resume during rest phase', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      const pauseResumeButton = screen.getByTestId('pause-resume-button');
+
+      // Advance through prepare (5s) and work (5s) to rest
+      act(() => {
+        vi.advanceTimersByTime(10000);
+      });
+
+      // Verify in rest phase
+      expect(screen.getByText('Rest')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
+
+      // Countdown to 2 seconds in rest
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+
+      expect(screen.getByText('2')).toBeInTheDocument();
+
+      // Pause during rest
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      // Time advances but timer stays paused
+      act(() => {
+        vi.advanceTimersByTime(10000);
+      });
+
+      // Should still be at 2 seconds in rest phase
+      expect(screen.getByText('Rest')).toBeInTheDocument();
+      expect(screen.getByText('2')).toBeInTheDocument();
+
+      // Resume
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      // Complete the rest phase
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      // Should transition to next work interval
+      expect(screen.getByText('Work')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
+
+      // Verify we're in interval 2
+      const progressIndicator = screen.getByTestId('progress-indicator');
+      expect(progressIndicator).toHaveTextContent('2/10');
+    });
+
+    it('should not play audio beeps while paused', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      const pauseResumeButton = screen.getByTestId('pause-resume-button');
+
+      // Advance to 4 seconds (countdown from 5 to 4)
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(screen.getByText('4')).toBeInTheDocument();
+
+      // Clear any previous beep calls
+      mockPlayBeep.mockClear();
+
+      // Pause the timer
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      // Advance time by 10 seconds (would normally trigger multiple beeps at 3, 2, 1, 0)
+      act(() => {
+        vi.advanceTimersByTime(10000);
+      });
+
+      // Verify no beeps were played while paused
+      expect(mockPlayBeep).not.toHaveBeenCalled();
+
+      // Verify timer is still at 4 seconds (didn't countdown)
+      expect(screen.getByText('4')).toBeInTheDocument();
+    });
+  });
 });
