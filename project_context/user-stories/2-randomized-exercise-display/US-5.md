@@ -6,5 +6,5 @@
 
 ## Acceptance Criteria
 
-- [ ] Exercise name remains visible during 60s work phase
-- [ ] Same exercise that was shown in prepare phase
+- [ ] Exercise name remains visible during work phase
+- [ ] Same exercise that was shown in prepare/rest phase
