@@ -10,7 +10,15 @@ vi.mock('../constants/tabata', () => ({
     REST_DURATION: 5,
     TOTAL_INTERVALS: 10,
   },
+  DEBUG_CONFIG: {
+    PREPARE_DURATION: 3,
+    WORK_DURATION: 3,
+    REST_DURATION: 3,
+    TOTAL_INTERVALS: 10,
+  },
 }));
+
+import { DEBUG_CONFIG } from '../constants/tabata';
 
 describe('useTimer', () => {
   beforeEach(() => {
@@ -241,5 +249,50 @@ describe('useTimer - Phase Transitions', () => {
     expect(result.current.phase).toBe('work');
     expect(result.current.remainingTime).toBe(0);
     expect(result.current.currentInterval).toBe(10);
+  });
+});
+
+describe('useTimer - Config Parameter', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should use debug config when provided', () => {
+    const { result } = renderHook(() => useTimer({ config: DEBUG_CONFIG }));
+
+    expect(result.current.remainingTime).toBe(3); // Debug prepare duration
+    expect(result.current.phase).toBe('prepare');
+  });
+
+  it('should transition from prepare to work with debug durations', () => {
+    const { result } = renderHook(() => useTimer({ config: DEBUG_CONFIG }));
+
+    act(() => result.current.start());
+
+    // Advance through debug prepare phase (3 seconds)
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+
+    expect(result.current.phase).toBe('work');
+    expect(result.current.remainingTime).toBe(3); // Debug work duration
+  });
+
+  it('should transition from work to rest with debug durations', () => {
+    const { result } = renderHook(() => useTimer({ config: DEBUG_CONFIG }));
+
+    act(() => result.current.start());
+
+    // Advance through prepare (3s) + work (3s) = 6s
+    act(() => {
+      vi.advanceTimersByTime(6000);
+    });
+
+    expect(result.current.phase).toBe('rest');
+    expect(result.current.remainingTime).toBe(3); // Debug rest duration
   });
 });

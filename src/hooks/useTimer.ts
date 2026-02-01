@@ -1,9 +1,10 @@
 import { useReducer, useEffect, useRef, useCallback } from 'react';
 import type { Phase } from '../types/timer';
-import { TABATA_CONFIG } from '../constants/tabata';
+import { TABATA_CONFIG, type TabataConfig } from '../constants/tabata';
 
 type UseTimerParams = {
   readonly initialTime?: number;
+  readonly config?: TabataConfig;
 };
 
 type UseTimerResult = {
@@ -27,7 +28,7 @@ type TimerAction =
   | { type: 'START' }
   | { type: 'PAUSE' };
 
-const timerReducer = (state: TimerState, action: TimerAction): TimerState => {
+const createTimerReducer = (config: TabataConfig) => (state: TimerState, action: TimerAction): TimerState => {
   switch (action.type) {
     case 'START':
       return { ...state, isActive: true };
@@ -48,14 +49,14 @@ const timerReducer = (state: TimerState, action: TimerAction): TimerState => {
           return {
             ...state,
             phase: 'work',
-            remainingTime: TABATA_CONFIG.WORK_DURATION,
+            remainingTime: config.WORK_DURATION,
           };
         } else if (state.phase === 'work') {
-          if (state.currentInterval < TABATA_CONFIG.TOTAL_INTERVALS) {
+          if (state.currentInterval < config.TOTAL_INTERVALS) {
             return {
               ...state,
               phase: 'rest',
-              remainingTime: TABATA_CONFIG.REST_DURATION,
+              remainingTime: config.REST_DURATION,
             };
           } else {
             return { ...state, remainingTime: 0 };
@@ -65,7 +66,7 @@ const timerReducer = (state: TimerState, action: TimerAction): TimerState => {
             ...state,
             phase: 'work',
             currentInterval: state.currentInterval + 1,
-            remainingTime: TABATA_CONFIG.WORK_DURATION,
+            remainingTime: config.WORK_DURATION,
           };
         }
       }
@@ -79,14 +80,17 @@ const timerReducer = (state: TimerState, action: TimerAction): TimerState => {
 };
 
 export const useTimer = (params?: UseTimerParams): UseTimerResult => {
+  const config = params?.config ?? TABATA_CONFIG;
+
   const initialState: TimerState = {
     phase: 'prepare',
     currentInterval: 1,
-    remainingTime: params?.initialTime ?? TABATA_CONFIG.PREPARE_DURATION,
+    remainingTime: params?.initialTime ?? config.PREPARE_DURATION,
     isActive: false,
-    isSessionMode: params === undefined,
+    isSessionMode: params?.initialTime === undefined,
   };
 
+  const timerReducer = createTimerReducer(config);
   const [state, dispatch] = useReducer(timerReducer, initialState);
   const intervalRef = useRef<number | null>(null);
 

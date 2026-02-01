@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { EXERCISES } from '../constants/exercises';
 import type { Exercise } from '../constants/exercises';
-import { TABATA_CONFIG } from '../constants/tabata';
+import { TABATA_CONFIG, type TabataConfig } from '../constants/tabata';
 
 // Generate a list of exercises with no consecutive duplicates
 const generateExerciseList = (count: number): Exercise[] => {
@@ -31,9 +31,9 @@ const generateExerciseList = (count: number): Exercise[] => {
 let cachedExerciseList: Exercise[] | null = null;
 
 // Function to get or create the exercise list
-const getExerciseList = (): Exercise[] => {
+const getExerciseList = (config: TabataConfig): Exercise[] => {
   if (cachedExerciseList === null) {
-    cachedExerciseList = generateExerciseList(TABATA_CONFIG.TOTAL_INTERVALS);
+    cachedExerciseList = generateExerciseList(config.TOTAL_INTERVALS);
   }
   return cachedExerciseList;
 };
@@ -43,8 +43,8 @@ export const resetExerciseList = (): void => {
   cachedExerciseList = null;
 };
 
-export const useRandomExercises = (currentInterval: number): Exercise => {
-  const exerciseList = useMemo(() => getExerciseList(), []);
+export const useRandomExercises = (currentInterval: number, config: TabataConfig = TABATA_CONFIG): Exercise => {
+  const exerciseList = useMemo(() => getExerciseList(config), [config]);
 
   // Return the exercise for the current interval (intervals are 1-indexed)
   return exerciseList[currentInterval - 1];

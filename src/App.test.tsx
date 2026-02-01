@@ -24,6 +24,12 @@ import { EXERCISES } from './constants/exercises';
 
 vi.mock('./constants/tabata', () => ({
   TABATA_CONFIG: {
+    PREPARE_DURATION: 15,
+    WORK_DURATION: 60,
+    REST_DURATION: 10,
+    TOTAL_INTERVALS: 10,
+  },
+  DEBUG_CONFIG: {
     PREPARE_DURATION: 5,
     WORK_DURATION: 5,
     REST_DURATION: 5,
@@ -95,7 +101,7 @@ describe('App - Integration', () => {
     fireEvent.click(startButton);
 
     expect(screen.getByText('Prepare')).toBeInTheDocument();
-    expect(screen.getByText('5')).toBeInTheDocument();
+    expect(screen.getByText('15')).toBeInTheDocument();
   });
 
   it('should start timer automatically after clicking Start', () => {
@@ -108,7 +114,7 @@ describe('App - Integration', () => {
       vi.advanceTimersByTime(1000);
     });
 
-    expect(screen.getByText('4')).toBeInTheDocument();
+    expect(screen.getByText('14')).toBeInTheDocument();
   });
 
   it('should display exercise during all phases (prepare, work, and rest)', () => {
@@ -123,9 +129,9 @@ describe('App - Integration', () => {
     const exercise1 = exerciseDisplayDuringPrepare.textContent;
     expect(EXERCISES).toContain(exercise1);
 
-    // Advance to work phase (5s)
+    // Advance to work phase (15s)
     act(() => {
-      vi.advanceTimersByTime(5000);
+      vi.advanceTimersByTime(15000);
     });
 
     // Should display exercise 1 during work phase (same as prepare)
@@ -134,9 +140,9 @@ describe('App - Integration', () => {
     expect(screen.getByText('Work')).toBeInTheDocument();
     expect(exerciseDisplayDuringWork).toHaveTextContent(exercise1!);
 
-    // Advance to rest phase (5s)
+    // Advance to rest phase (60s)
     act(() => {
-      vi.advanceTimersByTime(5000);
+      vi.advanceTimersByTime(60000);
     });
 
     // Should display exercise 2 during rest phase (preview of next exercise)
@@ -147,5 +153,57 @@ describe('App - Integration', () => {
     expect(EXERCISES).toContain(exercise2);
     // Exercise 2 should be different from exercise 1 (no consecutive duplicates)
     expect(exercise2).not.toBe(exercise1);
+  });
+
+  it('should display debug start button on home screen', () => {
+    render(<App />);
+
+    const debugButton = screen.getByRole('button', { name: /debug/i });
+    expect(debugButton).toBeInTheDocument();
+  });
+
+  it('should use debug config when debug button is clicked', () => {
+    render(<App />);
+
+    // Click debug button to start in debug mode
+    const debugButton = screen.getByRole('button', { name: /debug/i });
+    fireEvent.click(debugButton);
+
+    // Verify timer shows 5 seconds (debug mode prepare duration)
+    expect(screen.getByText('Prepare')).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
+
+    // Advance 1 second
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    // Verify countdown is working with debug config
+    expect(screen.getByText('4')).toBeInTheDocument();
+  });
+
+  it('should use normal config when start button is clicked', () => {
+    render(<App />);
+
+    // Click start button to start in normal mode
+    const startButton = screen.getByRole('button', { name: /^start$/i });
+    fireEvent.click(startButton);
+
+    // Verify timer shows 15 seconds (normal prepare duration)
+    expect(screen.getByText('Prepare')).toBeInTheDocument();
+    expect(screen.getByText('15')).toBeInTheDocument();
+  });
+
+  it('should show wrench emoji when started with debug button', () => {
+    render(<App />);
+
+    // Click debug button to start in debug mode
+    const debugButton = screen.getByRole('button', { name: /debug/i });
+    fireEvent.click(debugButton);
+
+    // Verify wrench emoji is visible
+    const wrenchEmoji = screen.getByTitle('Debug Mode');
+    expect(wrenchEmoji).toBeInTheDocument();
+    expect(wrenchEmoji).toHaveTextContent('🔧');
   });
 });
