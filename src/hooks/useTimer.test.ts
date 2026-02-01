@@ -129,30 +129,30 @@ describe('useTimer - Phase Transitions', () => {
     vi.restoreAllMocks();
   });
 
-  it('should start in prepare phase with 10 seconds', () => {
+  it('should start in prepare phase with 5 seconds', () => {
     const { result } = renderHook(() => useTimer());
 
     expect(result.current.phase).toBe('prepare');
-    expect(result.current.remainingTime).toBe(10);
+    expect(result.current.remainingTime).toBe(5);
   });
 
   it('should transition from prepare phase to work phase when timer reaches 0', () => {
     const { result } = renderHook(() => useTimer());
 
     expect(result.current.phase).toBe('prepare');
-    expect(result.current.remainingTime).toBe(10);
+    expect(result.current.remainingTime).toBe(5);
 
     act(() => {
       result.current.start();
     });
 
-    // Advance through prepare phase (10 seconds)
+    // Advance through prepare phase (5 seconds)
     act(() => {
-      vi.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(5000);
     });
 
     expect(result.current.phase).toBe('work');
-    expect(result.current.remainingTime).toBe(20);
+    expect(result.current.remainingTime).toBe(5);
   });
 
   it('should transition from work phase to rest phase when timer reaches 0', () => {
@@ -162,21 +162,21 @@ describe('useTimer - Phase Transitions', () => {
       result.current.start();
     });
 
-    // Advance through prepare phase (10 seconds)
+    // Advance through prepare phase (5 seconds)
     act(() => {
-      vi.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(5000);
     });
 
     expect(result.current.phase).toBe('work');
     expect(result.current.currentInterval).toBe(1);
 
-    // Advance through work phase (20 seconds)
+    // Advance through work phase (5 seconds)
     act(() => {
-      vi.advanceTimersByTime(20000);
+      vi.advanceTimersByTime(5000);
     });
 
     expect(result.current.phase).toBe('rest');
-    expect(result.current.remainingTime).toBe(10);
+    expect(result.current.remainingTime).toBe(5);
     expect(result.current.currentInterval).toBe(1);
   });
 
@@ -187,13 +187,13 @@ describe('useTimer - Phase Transitions', () => {
       result.current.start();
     });
 
-    // Advance through prepare (10s) + work (20s) + rest (10s) = 40s
+    // Advance through prepare (5s) + work (5s) + rest (5s) = 15s
     act(() => {
-      vi.advanceTimersByTime(40000);
+      vi.advanceTimersByTime(15000);
     });
 
     expect(result.current.phase).toBe('work');
-    expect(result.current.remainingTime).toBe(20);
+    expect(result.current.remainingTime).toBe(5);
     expect(result.current.currentInterval).toBe(2);
   });
 
@@ -205,27 +205,27 @@ describe('useTimer - Phase Transitions', () => {
     });
 
     // Advance through entire session:
-    // Initial prepare: 10s
-    // Then 8 intervals of (work 20s + rest 10s) = 8 * 30s = 240s
-    // But the last interval has no rest, so: 10 + (7 * 30) + 20 = 240s
+    // Initial prepare: 5s
+    // Then 8 intervals of (work 5s + rest 5s) = 8 * 10s = 80s
+    // But the last interval has no rest, so: 5 + (7 * 10) + 5 = 80s
     act(() => {
-      vi.advanceTimersByTime(10000); // Prepare
+      vi.advanceTimersByTime(5000); // Prepare
     });
 
     // Complete 7 full work+rest cycles
     for (let i = 0; i < 7; i++) {
       act(() => {
-        vi.advanceTimersByTime(30000); // Work (20s) + Rest (10s)
+        vi.advanceTimersByTime(10000); // Work (5s) + Rest (5s)
       });
     }
 
     expect(result.current.currentInterval).toBe(8);
     expect(result.current.phase).toBe('work');
-    expect(result.current.remainingTime).toBe(20);
+    expect(result.current.remainingTime).toBe(5);
 
     // Complete final work interval
     act(() => {
-      vi.advanceTimersByTime(20000);
+      vi.advanceTimersByTime(5000);
     });
 
     expect(result.current.phase).toBe('work');

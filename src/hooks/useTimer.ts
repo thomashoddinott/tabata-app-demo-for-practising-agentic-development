@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useReducer, useEffect, useRef, useCallback } from 'react';
 import type { Phase } from '../types/timer';
 import { TABATA_CONFIG } from '../constants/tabata';
 
@@ -14,30 +14,84 @@ type UseTimerResult = {
   readonly pause: () => void;
 };
 
+type TimerState = {
+  phase: Phase;
+  currentInterval: number;
+  remainingTime: number;
+  isActive: boolean;
+  isSessionMode: boolean;
+};
+
+type TimerAction =
+  | { type: 'TICK' }
+  | { type: 'START' }
+  | { type: 'PAUSE' };
+
+const timerReducer = (state: TimerState, action: TimerAction): TimerState => {
+  switch (action.type) {
+    case 'START':
+      return { ...state, isActive: true };
+
+    case 'PAUSE':
+      return { ...state, isActive: false };
+
+    case 'TICK': {
+      if (state.remainingTime <= 0) {
+        return state;
+      }
+
+      const newRemainingTime = state.remainingTime - 1;
+
+      // Handle phase transitions only in session mode
+      if (newRemainingTime === 0 && state.isSessionMode) {
+        if (state.phase === 'prepare') {
+          return {
+            ...state,
+            phase: 'work',
+            remainingTime: TABATA_CONFIG.WORK_DURATION,
+          };
+        } else if (state.phase === 'work') {
+          if (state.currentInterval < TABATA_CONFIG.TOTAL_INTERVALS) {
+            return {
+              ...state,
+              phase: 'rest',
+              remainingTime: TABATA_CONFIG.REST_DURATION,
+            };
+          } else {
+            return { ...state, remainingTime: 0 };
+          }
+        } else if (state.phase === 'rest') {
+          return {
+            ...state,
+            phase: 'work',
+            currentInterval: state.currentInterval + 1,
+            remainingTime: TABATA_CONFIG.WORK_DURATION,
+          };
+        }
+      }
+
+      return { ...state, remainingTime: newRemainingTime };
+    }
+
+    default:
+      return state;
+  }
+};
+
 export const useTimer = (params?: UseTimerParams): UseTimerResult => {
-  const [phase, setPhase] = useState<Phase>('prepare');
-  const [currentInterval, setCurrentInterval] = useState(1);
-  const [remainingTime, setRemainingTime] = useState(
-    params?.initialTime ?? TABATA_CONFIG.PREPARE_DURATION
-  );
-  const [isActive, setIsActive] = useState(false);
+  const initialState: TimerState = {
+    phase: 'prepare',
+    currentInterval: 1,
+    remainingTime: params?.initialTime ?? TABATA_CONFIG.PREPARE_DURATION,
+    isActive: false,
+    isSessionMode: params === undefined,
+  };
+
+  const [state, dispatch] = useReducer(timerReducer, initialState);
   const intervalRef = useRef<number | null>(null);
 
-  // Use refs to track current values for interval callback
-  const phaseRef = useRef<Phase>(phase);
-  const currentIntervalRef = useRef(currentInterval);
-
-  // Keep refs in sync with state
   useEffect(() => {
-    phaseRef.current = phase;
-  }, [phase]);
-
-  useEffect(() => {
-    currentIntervalRef.current = currentInterval;
-  }, [currentInterval]);
-
-  useEffect(() => {
-    if (!isActive) {
+    if (!state.isActive) {
       if (intervalRef.current !== null) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -46,38 +100,7 @@ export const useTimer = (params?: UseTimerParams): UseTimerResult => {
     }
 
     intervalRef.current = window.setInterval(() => {
-      setRemainingTime((prev) => {
-        if (prev <= 0) {
-          return 0;
-        }
-        const newTime = prev - 1;
-
-        // Handle phase transitions when timer reaches 0
-        if (newTime === 0 && params === undefined) {
-          const currentPhase = phaseRef.current;
-          const interval = currentIntervalRef.current;
-
-          if (currentPhase === 'prepare') {
-            phaseRef.current = 'work';  // Update ref immediately
-            setPhase('work');
-            return TABATA_CONFIG.WORK_DURATION;
-          } else if (currentPhase === 'work') {
-            if (interval < TABATA_CONFIG.TOTAL_INTERVALS) {
-              phaseRef.current = 'rest';  // Update ref immediately
-              setPhase('rest');
-              return TABATA_CONFIG.REST_DURATION;
-            }
-          } else if (currentPhase === 'rest') {
-            phaseRef.current = 'work';  // Update ref immediately
-            currentIntervalRef.current = interval + 1;  // Update ref immediately
-            setPhase('work');
-            setCurrentInterval(interval + 1);
-            return TABATA_CONFIG.WORK_DURATION;
-          }
-        }
-
-        return newTime;
-      });
+      dispatch({ type: 'TICK' });
     }, 1000);
 
     return () => {
@@ -85,20 +108,20 @@ export const useTimer = (params?: UseTimerParams): UseTimerResult => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isActive, params]);
+  }, [state.isActive]);
 
-  const start = () => {
-    setIsActive(true);
-  };
+  const start = useCallback(() => {
+    dispatch({ type: 'START' });
+  }, []);
 
-  const pause = () => {
-    setIsActive(false);
-  };
+  const pause = useCallback(() => {
+    dispatch({ type: 'PAUSE' });
+  }, []);
 
   return {
-    remainingTime,
-    phase,
-    currentInterval,
+    remainingTime: state.remainingTime,
+    phase: state.phase,
+    currentInterval: state.currentInterval,
     start,
     pause,
   };

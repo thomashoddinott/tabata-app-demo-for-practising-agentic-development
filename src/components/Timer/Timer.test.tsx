@@ -11,11 +11,11 @@ describe('Timer', () => {
     vi.restoreAllMocks();
   });
 
-  it('should display initial prepare phase with 10 seconds', () => {
+  it('should display initial prepare phase with 5 seconds', () => {
     render(<Timer />);
 
     expect(screen.getByText('Prepare')).toBeInTheDocument();
-    expect(screen.getByText('10')).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
   });
 
   it('should countdown when started', () => {
@@ -25,17 +25,17 @@ describe('Timer', () => {
       vi.advanceTimersByTime(1000);
     });
 
-    expect(screen.getByText('9')).toBeInTheDocument();
+    expect(screen.getByText('4')).toBeInTheDocument();
   });
 
   it('should transition to work phase after prepare completes', () => {
     render(<Timer />);
 
     act(() => {
-      vi.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(5000);
     });
 
     expect(screen.getByText('Work')).toBeInTheDocument();
-    expect(screen.getByText('20')).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
   });
 });

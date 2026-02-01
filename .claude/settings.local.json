@@ -13,7 +13,9 @@
       "Bash(npm install:*)",
       "Bash(npx tailwindcss:*)",
       "Bash(ls:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run dev:*)"
     ]
   }
 }

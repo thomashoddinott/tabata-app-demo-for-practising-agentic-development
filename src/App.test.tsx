@@ -25,7 +25,7 @@ describe('App - Integration', () => {
     fireEvent.click(startButton);
 
     expect(screen.getByText('Prepare')).toBeInTheDocument();
-    expect(screen.getByText('10')).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
   });
 
   it('should start timer automatically after clicking Start', () => {
@@ -38,6 +38,6 @@ describe('App - Integration', () => {
       vi.advanceTimersByTime(1000);
     });
 
-    expect(screen.getByText('9')).toBeInTheDocument();
+    expect(screen.getByText('4')).toBeInTheDocument();
   });
 });
