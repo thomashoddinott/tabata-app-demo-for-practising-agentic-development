@@ -7,8 +7,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        'prepare': '#22c55e',
+        'prepare': '#3b82f6',
         'work': '#ef4444',
+        'rest': '#22c55e',
       },
     },
   },
