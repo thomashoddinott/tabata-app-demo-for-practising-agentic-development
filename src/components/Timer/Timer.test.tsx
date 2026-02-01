@@ -2,8 +2,46 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import { Timer } from './Timer';
 import * as useRandomExercisesModule from '../../hooks/useRandomExercises';
-import { EXERCISES } from '../../constants/exercises';
 import { resetExerciseList } from '../../hooks/useRandomExercises';
+
+// Mock the constants modules with test-specific values (independent of production constants)
+vi.mock('../../constants/exercises', () => ({
+  EXERCISES: [
+    'Push-ups',
+    'Squats',
+    'Burpees',
+    'Lunges',
+    'Mountain Climbers',
+    'Plank',
+    'Jumping Jacks',
+    'High Knees',
+    'Bicycle Crunches',
+    'Jump Squats',
+  ],
+}));
+
+// Import the mocked EXERCISES to use in assertions
+import { EXERCISES } from '../../constants/exercises';
+
+vi.mock('../../constants/tabata', () => ({
+  TABATA_CONFIG: {
+    PREPARE_DURATION: 5,
+    WORK_DURATION: 5,
+    REST_DURATION: 5,
+    TOTAL_INTERVALS: 10,
+  },
+}));
+
+vi.mock('../../constants/audio', () => ({
+  AUDIO_CONFIG: {
+    PREPARE_FREQUENCY: 800,
+    WORK_FREQUENCY: 1200,
+    BEEP_DURATION: 150,
+    BEEP_VOLUME: 0.3,
+    FINAL_BEEP_DURATION: 300,
+    FINAL_BEEP_VOLUME: 0.5,
+  },
+}));
 
 describe('Timer', () => {
   beforeEach(() => {
@@ -121,7 +159,7 @@ describe('Timer', () => {
       const exerciseDisplay = screen.getByTestId('exercise-display');
       const exerciseText = exerciseDisplay.textContent;
 
-      expect(EXERCISES).toContain(exerciseText as typeof EXERCISES[number]);
+      expect(EXERCISES).toContain(exerciseText);
     });
   });
 
@@ -143,7 +181,7 @@ describe('Timer', () => {
       const exerciseDuringWork = exerciseDisplay.textContent || '';
 
       expect(exerciseDuringPrepare).toBe(exerciseDuringWork);
-      expect(EXERCISES).toContain(exerciseDuringPrepare as typeof EXERCISES[number]);
+      expect(EXERCISES).toContain(exerciseDuringPrepare);
     });
 
     it('should show exercise 2 during rest after interval 1 and during work of interval 2', () => {
@@ -173,7 +211,7 @@ describe('Timer', () => {
       const exerciseDuringWork2 = exerciseDisplay.textContent || '';
 
       expect(exerciseDuringRest).toBe(exerciseDuringWork2);
-      expect(EXERCISES).toContain(exerciseDuringRest as typeof EXERCISES[number]);
+      expect(EXERCISES).toContain(exerciseDuringRest);
     });
 
     it('should display different exercises between work intervals', () => {
@@ -197,8 +235,8 @@ describe('Timer', () => {
 
       // Verify exercises are different
       expect(exercise1).not.toBe(exercise2);
-      expect(EXERCISES).toContain(exercise1 as typeof EXERCISES[number]);
-      expect(EXERCISES).toContain(exercise2 as typeof EXERCISES[number]);
+      expect(EXERCISES).toContain(exercise1);
+      expect(EXERCISES).toContain(exercise2);
     });
 
     it('should ensure no consecutive duplicates across multiple intervals', () => {

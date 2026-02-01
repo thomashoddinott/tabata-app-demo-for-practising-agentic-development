@@ -1,6 +1,33 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useRandomExercises, resetExerciseList } from './useRandomExercises';
+
+// Mock the constants modules with test-specific values (independent of production constants)
+vi.mock('../constants/exercises', () => ({
+  EXERCISES: [
+    'Push-ups',
+    'Squats',
+    'Burpees',
+    'Lunges',
+    'Mountain Climbers',
+    'Plank',
+    'Jumping Jacks',
+    'High Knees',
+    'Bicycle Crunches',
+    'Jump Squats',
+  ],
+}));
+
+vi.mock('../constants/tabata', () => ({
+  TABATA_CONFIG: {
+    PREPARE_DURATION: 5,
+    WORK_DURATION: 5,
+    REST_DURATION: 5,
+    TOTAL_INTERVALS: 10,
+  },
+}));
+
+// Import the mocked constants to use in assertions
 import { EXERCISES } from '../constants/exercises';
 import { TABATA_CONFIG } from '../constants/tabata';
 
@@ -74,7 +101,7 @@ describe('useRandomExercises', () => {
 
   describe('US-6: No consecutive duplicate exercises', () => {
     it('should ensure no consecutive exercises are the same', () => {
-      // Test all intervals to ensure no consecutive duplicates
+      // Test all 10 intervals to ensure no consecutive duplicates
       const exercises: string[] = [];
 
       for (let interval = 1; interval <= TABATA_CONFIG.TOTAL_INTERVALS; interval++) {

@@ -1,12 +1,21 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { buildSessionIntervals, getCurrentSequentialNumber } from './sessionBuilder';
-import { TABATA_CONFIG } from '../constants/tabata';
+
+// Mock the TABATA_CONFIG module with test-specific values (independent of production constants)
+vi.mock('../constants/tabata', () => ({
+  TABATA_CONFIG: {
+    PREPARE_DURATION: 5,
+    WORK_DURATION: 60,
+    REST_DURATION: 10,
+    TOTAL_INTERVALS: 8,
+  },
+}));
 
 describe('buildSessionIntervals', () => {
-  it('should generate 20 total phases for 10 work rounds', () => {
+  it('should generate 16 total phases for 8 work rounds', () => {
     const intervals = buildSessionIntervals();
-    // 1 prepare + 10 work + 9 rest = 20 total
-    expect(intervals).toHaveLength(20);
+    // 1 prepare + 8 work + 7 rest = 16 total
+    expect(intervals).toHaveLength(16);
   });
 
   it('should start with prepare phase', () => {
@@ -14,7 +23,7 @@ describe('buildSessionIntervals', () => {
     expect(intervals[0]).toEqual({
       sequentialNumber: 1,
       phase: 'prepare',
-      duration: TABATA_CONFIG.PREPARE_DURATION,
+      duration: 5,
       workInterval: null,
     });
   });
@@ -35,27 +44,27 @@ describe('buildSessionIntervals', () => {
     const intervals = buildSessionIntervals();
     const lastInterval = intervals[intervals.length - 1];
 
-    // Last interval should be work phase (interval 10)
+    // Last interval should be work phase (interval 8)
     expect(lastInterval.phase).toBe('work');
-    expect(lastInterval.workInterval).toBe(10);
+    expect(lastInterval.workInterval).toBe(8);
   });
 
-  it('should use correct durations from TABATA_CONFIG', () => {
+  it('should use correct durations', () => {
     const intervals = buildSessionIntervals();
 
-    // Check prepare duration
-    expect(intervals[0].duration).toBe(TABATA_CONFIG.PREPARE_DURATION);
+    // Check prepare duration (5s)
+    expect(intervals[0].duration).toBe(5);
 
-    // Check work durations
+    // Check work durations (60s)
     const workIntervals = intervals.filter(i => i.phase === 'work');
     workIntervals.forEach(interval => {
-      expect(interval.duration).toBe(TABATA_CONFIG.WORK_DURATION);
+      expect(interval.duration).toBe(60);
     });
 
-    // Check rest durations
+    // Check rest durations (10s)
     const restIntervals = intervals.filter(i => i.phase === 'rest');
     restIntervals.forEach(interval => {
-      expect(interval.duration).toBe(TABATA_CONFIG.REST_DURATION);
+      expect(interval.duration).toBe(10);
     });
   });
 
@@ -74,8 +83,9 @@ describe('buildSessionIntervals', () => {
     // Second work interval should be 2
     expect(intervals[3].workInterval).toBe(2);
 
-    // Last work interval should be 8
-    expect(intervals[15].workInterval).toBe(8);
+    // Last work interval (8th) should be at index 15
+    const lastWorkInterval = intervals[intervals.length - 1];
+    expect(lastWorkInterval.workInterval).toBe(8);
   });
 
   it('should assign sequential numbers correctly', () => {
@@ -113,13 +123,13 @@ describe('getCurrentSequentialNumber', () => {
     expect(result).toBe(5);
   });
 
-  it('should return 20 for work interval 10', () => {
-    const result = getCurrentSequentialNumber('work', 10);
-    expect(result).toBe(20);
+  it('should return 16 for work interval 8', () => {
+    const result = getCurrentSequentialNumber('work', 8);
+    expect(result).toBe(16);
   });
 
-  it('should return 15 for rest after interval 7', () => {
-    const result = getCurrentSequentialNumber('rest', 7);
-    expect(result).toBe(15);
+  it('should return 13 for rest after interval 6', () => {
+    const result = getCurrentSequentialNumber('rest', 6);
+    expect(result).toBe(13);
   });
 });

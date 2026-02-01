@@ -1,8 +1,35 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import App from './App';
-import { EXERCISES } from './constants/exercises';
 import { resetExerciseList } from './hooks/useRandomExercises';
+
+// Mock the constants modules with test-specific values (independent of production constants)
+vi.mock('./constants/exercises', () => ({
+  EXERCISES: [
+    'Push-ups',
+    'Squats',
+    'Burpees',
+    'Lunges',
+    'Mountain Climbers',
+    'Plank',
+    'Jumping Jacks',
+    'High Knees',
+    'Bicycle Crunches',
+    'Jump Squats',
+  ],
+}));
+
+// Import the mocked EXERCISES to use in assertions
+import { EXERCISES } from './constants/exercises';
+
+vi.mock('./constants/tabata', () => ({
+  TABATA_CONFIG: {
+    PREPARE_DURATION: 5,
+    WORK_DURATION: 5,
+    REST_DURATION: 5,
+    TOTAL_INTERVALS: 10,
+  },
+}));
 
 describe('App - Integration', () => {
   beforeEach(() => {
@@ -55,7 +82,7 @@ describe('App - Integration', () => {
     const exerciseDisplayDuringPrepare = screen.getByTestId('exercise-display');
     expect(exerciseDisplayDuringPrepare).toBeInTheDocument();
     const exercise1 = exerciseDisplayDuringPrepare.textContent;
-    expect(EXERCISES).toContain(exercise1 as typeof EXERCISES[number]);
+    expect(EXERCISES).toContain(exercise1);
 
     // Advance to work phase (5s)
     act(() => {
@@ -78,7 +105,7 @@ describe('App - Integration', () => {
     expect(exerciseDisplayDuringRest).toBeInTheDocument();
     expect(screen.getByText('Rest')).toBeInTheDocument();
     const exercise2 = exerciseDisplayDuringRest.textContent;
-    expect(EXERCISES).toContain(exercise2 as typeof EXERCISES[number]);
+    expect(EXERCISES).toContain(exercise2);
     // Exercise 2 should be different from exercise 1 (no consecutive duplicates)
     expect(exercise2).not.toBe(exercise1);
   });

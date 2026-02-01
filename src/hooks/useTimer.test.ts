@@ -2,6 +2,16 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTimer } from './useTimer';
 
+// Mock the TABATA_CONFIG module with test-specific values (independent of production constants)
+vi.mock('../constants/tabata', () => ({
+  TABATA_CONFIG: {
+    PREPARE_DURATION: 5,
+    WORK_DURATION: 5,
+    REST_DURATION: 5,
+    TOTAL_INTERVALS: 10,
+  },
+}));
+
 describe('useTimer', () => {
   beforeEach(() => {
     vi.useFakeTimers();
