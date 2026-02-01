@@ -14,9 +14,14 @@ Voice to text of my thoughts, then I'll tidy up:
 – I'll pass I'd like improvements. I'd like to pass over this code with maybe some other agents because I just rushed I didn't review things as thoroughly as I'd like to.
 
 Sometimes it didn't sometimes it did not enter the or use the program guardian agent which I expected to use all the time
+
+Claude also behaves differently between sessions sometimes asking me for or micromanaging me to allow us to do everything other times just going off and doing the task by itself
 ```
 
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/3d3600f3-e4bc-4231-8415-b3cffcf38119" />
+
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/b2f22b55-fd9c-4542-aeb0-17f9a9a62b38" />
+
 
 
 # React + TypeScript + Vite
