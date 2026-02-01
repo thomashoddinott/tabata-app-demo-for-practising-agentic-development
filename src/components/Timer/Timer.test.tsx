@@ -1033,4 +1033,246 @@ describe('Timer', () => {
       expect(screen.getByText('4')).toBeInTheDocument();
     });
   });
+
+  describe('Navigation Controls', () => {
+    it('should navigate forward to next interval when forward button is clicked', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      // Advance to interval 1 work phase
+      act(() => {
+        vi.advanceTimersByTime(5000); // Complete prepare
+      });
+
+      expect(screen.getByText('Work')).toBeInTheDocument();
+      expect(screen.getByTestId('progress-indicator')).toHaveTextContent('1/10');
+
+      // Click forward button
+      const forwardButton = screen.getByLabelText('Next interval');
+      act(() => {
+        forwardButton.click();
+      });
+
+      // Should jump to interval 2 work phase
+      expect(screen.getByTestId('progress-indicator')).toHaveTextContent('2/10');
+      expect(screen.getByText('Work')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument(); // Reset to full work duration
+    });
+
+    it('should disable forward button at interval 10', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      // Fast forward to interval 10
+      act(() => {
+        vi.advanceTimersByTime(5000); // Prepare
+      });
+
+      for (let i = 0; i < 9; i++) {
+        act(() => {
+          vi.advanceTimersByTime(10000); // Work + Rest
+        });
+      }
+
+      expect(screen.getByTestId('progress-indicator')).toHaveTextContent('10/10');
+
+      const forwardButton = screen.getByLabelText('Next interval');
+      expect(forwardButton).toBeDisabled();
+    });
+
+    it('should navigate back to previous interval when ≤5 seconds elapsed', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      // Advance to interval 2
+      act(() => {
+        vi.advanceTimersByTime(5000); // Prepare
+        vi.advanceTimersByTime(10000); // Interval 1: work + rest
+      });
+
+      expect(screen.getByTestId('progress-indicator')).toHaveTextContent('2/10');
+
+      // Advance 2 seconds (elapsed = 2s, which is ≤ 5s)
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(screen.getByText('3')).toBeInTheDocument();
+
+      // Click back button
+      const backButton = screen.getByLabelText('Previous interval');
+      act(() => {
+        backButton.click();
+      });
+
+      // Should go to interval 1 work phase
+      expect(screen.getByTestId('progress-indicator')).toHaveTextContent('1/10');
+      expect(screen.getByText('Work')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
+    it('should go back to prepare phase when navigating back from interval 1', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      // Advance to interval 1 work phase
+      act(() => {
+        vi.advanceTimersByTime(5000); // Complete prepare
+      });
+
+      expect(screen.getByText('Work')).toBeInTheDocument();
+      expect(screen.getByTestId('progress-indicator')).toHaveTextContent('1/10');
+
+      // Click back button
+      const backButton = screen.getByLabelText('Previous interval');
+      act(() => {
+        backButton.click();
+      });
+
+      // Should go back to prepare phase
+      expect(screen.getByText('Prepare')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
+    it('should disable back button at prepare phase', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      // At prepare phase
+      expect(screen.getByText('Prepare')).toBeInTheDocument();
+
+      const backButton = screen.getByLabelText('Previous interval');
+      expect(backButton).toBeDisabled();
+    });
+
+    it('should preserve pause state when navigating forward', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      // Advance to work phase
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // Pause timer
+      const pauseButton = screen.getByTestId('pause-resume-button');
+      act(() => {
+        pauseButton.click();
+      });
+
+      expect(pauseButton).toHaveTextContent('▶'); // Showing play icon (paused)
+
+      // Navigate forward
+      const forwardButton = screen.getByLabelText('Next interval');
+      act(() => {
+        forwardButton.click();
+      });
+
+      // Should still be paused
+      expect(pauseButton).toHaveTextContent('▶');
+      expect(screen.getByTestId('progress-indicator')).toHaveTextContent('2/10');
+
+      // Timer should not countdown
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(screen.getByText('5')).toBeInTheDocument(); // Still at 5 seconds
+    });
+
+    it('should preserve pause state when navigating backward', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      // Advance to interval 2
+      act(() => {
+        vi.advanceTimersByTime(5000); // Prepare
+        vi.advanceTimersByTime(10000); // Interval 1
+      });
+
+      // Pause timer
+      const pauseButton = screen.getByTestId('pause-resume-button');
+      act(() => {
+        pauseButton.click();
+      });
+
+      expect(pauseButton).toHaveTextContent('▶');
+
+      // Navigate backward
+      const backButton = screen.getByLabelText('Previous interval');
+      act(() => {
+        backButton.click();
+      });
+
+      // Should still be paused
+      expect(pauseButton).toHaveTextContent('▶');
+      expect(screen.getByTestId('progress-indicator')).toHaveTextContent('1/10');
+
+      // Timer should not countdown
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
+    it('should allow full navigation flow: forward, pause, back, resume', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      // Advance to interval 1 work phase
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      expect(screen.getByTestId('progress-indicator')).toHaveTextContent('1/10');
+
+      // Navigate forward to interval 2
+      const forwardButton = screen.getByLabelText('Next interval');
+      act(() => {
+        forwardButton.click();
+      });
+
+      expect(screen.getByTestId('progress-indicator')).toHaveTextContent('2/10');
+
+      // Pause
+      const pauseResumeButton = screen.getByTestId('pause-resume-button');
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      expect(pauseResumeButton).toHaveTextContent('▶');
+
+      // Navigate back to interval 1
+      const backButton = screen.getByLabelText('Previous interval');
+      act(() => {
+        backButton.click();
+      });
+
+      expect(screen.getByTestId('progress-indicator')).toHaveTextContent('1/10');
+
+      // Resume
+      act(() => {
+        pauseResumeButton.click();
+      });
+
+      expect(pauseResumeButton).toHaveTextContent('||');
+
+      // Timer should countdown
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(screen.getByText('4')).toBeInTheDocument();
+    });
+
+    it('should enable back button after navigating forward from prepare phase', () => {
+      render(<Timer playBeep={mockPlayBeep} />);
+
+      const backButton = screen.getByLabelText('Previous interval');
+
+      // At prepare phase - back should be disabled
+      expect(backButton).toBeDisabled();
+
+      // Advance to work phase
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // Back button should now be enabled
+      expect(backButton).not.toBeDisabled();
+    });
+  });
 });

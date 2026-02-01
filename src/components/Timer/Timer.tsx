@@ -14,7 +14,7 @@ type TimerProps = {
 };
 
 export const Timer = ({ playBeep, config = TABATA_CONFIG, isDebugMode = false }: TimerProps) => {
-  const { phase, remainingTime, start, currentInterval, pause, isActive } = useTimer({ config });
+  const { phase, remainingTime, start, currentInterval, pause, isActive, nextInterval, previousInterval, canGoNext, canGoPrevious } = useTimer({ config });
   const prevPhaseRef = useRef(phase);
 
   // Determine which exercise to display based on the phase:
@@ -120,10 +120,30 @@ export const Timer = ({ playBeep, config = TABATA_CONFIG, isDebugMode = false }:
           intervals={visibleIntervals}
           currentSequentialNumber={currentSequentialNumber}
         />
-        <ProgressIndicator
-          current={phase === 'prepare' ? 0 : currentInterval}
-          total={config.TOTAL_INTERVALS}
-        />
+        <div className="flex items-center justify-between gap-8 px-8 max-w-md mx-auto">
+          <button
+            onClick={previousInterval}
+            disabled={!canGoPrevious}
+            aria-label="Previous interval"
+            className="text-white text-4xl font-bold bg-black/30 rounded-full w-16 h-16 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/50 transition-colors flex-shrink-0"
+          >
+            ◀
+          </button>
+
+          <ProgressIndicator
+            current={phase === 'prepare' ? 0 : currentInterval}
+            total={config.TOTAL_INTERVALS}
+          />
+
+          <button
+            onClick={nextInterval}
+            disabled={!canGoNext}
+            aria-label="Next interval"
+            className="text-white text-4xl font-bold bg-black/30 rounded-full w-16 h-16 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/50 transition-colors flex-shrink-0"
+          >
+            ▶
+          </button>
+        </div>
       </div>
     </div>
   );
