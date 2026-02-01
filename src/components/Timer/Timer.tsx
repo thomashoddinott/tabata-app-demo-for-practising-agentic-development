@@ -3,8 +3,14 @@ import { useTimer } from '../../hooks/useTimer';
 import { useRandomExercises } from '../../hooks/useRandomExercises';
 
 export const Timer = () => {
-  const { phase, remainingTime, start } = useTimer();
-  const exercise = useRandomExercises();
+  const { phase, remainingTime, start, currentInterval } = useTimer();
+
+  // Determine which exercise to display based on the phase:
+  // - prepare: show exercise 1 (first exercise)
+  // - work: show exercise for current interval
+  // - rest: show exercise for next interval (preview what's coming)
+  const exerciseInterval = phase === 'prepare' ? 1 : phase === 'rest' ? currentInterval + 1 : currentInterval;
+  const exercise = useRandomExercises(exerciseInterval);
 
   useEffect(() => {
     start();

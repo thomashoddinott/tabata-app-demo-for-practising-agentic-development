@@ -2,14 +2,17 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import App from './App';
 import { EXERCISES } from './constants/exercises';
+import { resetExerciseList } from './hooks/useRandomExercises';
 
 describe('App - Integration', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    resetExerciseList();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    resetExerciseList();
   });
 
   it('should display Home screen with Start button initially', () => {
@@ -48,34 +51,35 @@ describe('App - Integration', () => {
     const startButton = screen.getByRole('button', { name: /start/i });
     fireEvent.click(startButton);
 
-    // Should display exercise during prepare phase
+    // Should display exercise 1 during prepare phase
     const exerciseDisplayDuringPrepare = screen.getByTestId('exercise-display');
     expect(exerciseDisplayDuringPrepare).toBeInTheDocument();
-    const exerciseText = exerciseDisplayDuringPrepare.textContent;
-    expect(EXERCISES).toContain(exerciseText as typeof EXERCISES[number]);
+    const exercise1 = exerciseDisplayDuringPrepare.textContent;
+    expect(EXERCISES).toContain(exercise1 as typeof EXERCISES[number]);
 
     // Advance to work phase (5s)
     act(() => {
       vi.advanceTimersByTime(5000);
     });
 
-    // Should display exercise during work phase
+    // Should display exercise 1 during work phase (same as prepare)
     const exerciseDisplayDuringWork = screen.getByTestId('exercise-display');
     expect(exerciseDisplayDuringWork).toBeInTheDocument();
     expect(screen.getByText('Work')).toBeInTheDocument();
-    // Should show the same exercise
-    expect(exerciseDisplayDuringWork).toHaveTextContent(exerciseText!);
+    expect(exerciseDisplayDuringWork).toHaveTextContent(exercise1!);
 
     // Advance to rest phase (5s)
     act(() => {
       vi.advanceTimersByTime(5000);
     });
 
-    // Should display exercise during rest phase
+    // Should display exercise 2 during rest phase (preview of next exercise)
     const exerciseDisplayDuringRest = screen.getByTestId('exercise-display');
     expect(exerciseDisplayDuringRest).toBeInTheDocument();
     expect(screen.getByText('Rest')).toBeInTheDocument();
-    // Should show the same exercise
-    expect(exerciseDisplayDuringRest).toHaveTextContent(exerciseText!);
+    const exercise2 = exerciseDisplayDuringRest.textContent;
+    expect(EXERCISES).toContain(exercise2 as typeof EXERCISES[number]);
+    // Exercise 2 should be different from exercise 1 (no consecutive duplicates)
+    expect(exercise2).not.toBe(exercise1);
   });
 });
