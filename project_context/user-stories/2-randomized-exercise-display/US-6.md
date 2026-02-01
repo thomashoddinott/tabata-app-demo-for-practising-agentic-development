@@ -1,4 +1,4 @@
-# US-6: No Exercise Repetition Back-to-Back
+# US-6: No Exercise Repetition
 
 **As** Thomas
 **I want** to avoid doing the same exercise twice in a row

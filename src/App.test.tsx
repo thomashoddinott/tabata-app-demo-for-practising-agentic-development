@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import App from './App';
+import { EXERCISES } from './constants/exercises';
 
 describe('App - Integration', () => {
   beforeEach(() => {
@@ -39,5 +40,39 @@ describe('App - Integration', () => {
     });
 
     expect(screen.getByText('4')).toBeInTheDocument();
+  });
+
+  it('should display exercise during prepare and rest phases, but not during work phase', () => {
+    render(<App />);
+
+    const startButton = screen.getByRole('button', { name: /start/i });
+    fireEvent.click(startButton);
+
+    // Should display exercise during prepare phase
+    const exerciseDisplayDuringPrepare = screen.getByTestId('exercise-display');
+    expect(exerciseDisplayDuringPrepare).toBeInTheDocument();
+    const exerciseText = exerciseDisplayDuringPrepare.textContent;
+    expect(EXERCISES).toContain(exerciseText as typeof EXERCISES[number]);
+
+    // Advance to work phase (5s)
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+
+    // Should NOT display exercise during work phase
+    expect(screen.queryByTestId('exercise-display')).not.toBeInTheDocument();
+    expect(screen.getByText('Work')).toBeInTheDocument();
+
+    // Advance to rest phase (5s)
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+
+    // Should display exercise during rest phase
+    const exerciseDisplayDuringRest = screen.getByTestId('exercise-display');
+    expect(exerciseDisplayDuringRest).toBeInTheDocument();
+    expect(screen.getByText('Rest')).toBeInTheDocument();
+    // Should show the same exercise
+    expect(exerciseDisplayDuringRest).toHaveTextContent(exerciseText!);
   });
 });
