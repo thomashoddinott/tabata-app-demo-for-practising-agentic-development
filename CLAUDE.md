@@ -12,6 +12,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 When implementing features, building UI, or making architecture decisions, reference the plan to ensure alignment with user needs and project goals.
 
+**CRITICAL WORKFLOW RULE:** Work on **ONE user story at a time** within an epic. Complete, test, and commit each user story before moving to the next. This prevents scope creep, maintains focus, and ensures each feature is fully functional and tested before adding complexity. Do not implement multiple user stories simultaneously or add features not explicitly defined in the current user story.
+
 ## Project Overview
 
 This is a Tabata timer application demo repository for practicing agentic development. The app provides a simple, one-tap interface for starting Tabata workout sessions with pre-configured timing (10s prepare, 60s work, 10s rest, 8 rounds).
