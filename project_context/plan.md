@@ -34,9 +34,8 @@ Build a randomized Tabata timer app that displays which exercise to perform duri
 - [US-7: Countdown Beeps](user-stories/3-audio-feedback/US-7.md)
 - [US-8: Different Tones for Phase Types](user-stories/3-audio-feedback/US-8.md)
 
-### Epic 4: Session Progress
-- [US-9: View Upcoming Intervals](user-stories/4-session-progress/US-9.md)
-- [US-10: Track Session Progress](user-stories/4-session-progress/US-10.md)
+### Epic 4: Session Progress Indicators
+- [US-9/10: View Session Progress and Upcoming Intervals](user-stories/4-session-progress/US-9-10-combined.md) *(Merged from US-9 and US-10 - both features are tightly coupled)*
 
 ### Epic 5: Session Control
 - [US-11: Pause/Resume Session](user-stories/5-session-control/US-11.md)
