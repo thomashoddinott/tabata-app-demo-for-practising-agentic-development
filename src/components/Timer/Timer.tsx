@@ -14,7 +14,7 @@ type TimerProps = {
 };
 
 export const Timer = ({ playBeep, config = TABATA_CONFIG, isDebugMode = false }: TimerProps) => {
-  const { phase, remainingTime, start, currentInterval } = useTimer({ config });
+  const { phase, remainingTime, start, currentInterval, pause, isActive } = useTimer({ config });
   const prevPhaseRef = useRef(phase);
 
   // Determine which exercise to display based on the phase:
@@ -90,6 +90,15 @@ export const Timer = ({ playBeep, config = TABATA_CONFIG, isDebugMode = false }:
           🔧
         </div>
       )}
+      {/* Pause/Resume button */}
+      <button
+        data-testid="pause-resume-button"
+        onClick={() => isActive ? pause() : start()}
+        aria-label={isActive ? 'Pause timer' : 'Resume timer'}
+        className="absolute top-4 left-4 text-white text-4xl font-bold bg-black/30 rounded-full w-16 h-16 flex items-center justify-center hover:bg-black/50 transition-colors"
+      >
+        {isActive ? '||' : '▶'}
+      </button>
       {/* Top section - countdown display */}
       <div className="flex-1 flex items-center justify-center">
         <div className="text-white text-center">

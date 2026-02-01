@@ -12,6 +12,7 @@ type UseTimerResult = {
   readonly phase: Phase;
   readonly currentInterval: number;
   readonly start: () => void;
+  readonly isActive: boolean;
   readonly pause: () => void;
 };
 
@@ -126,6 +127,7 @@ export const useTimer = (params?: UseTimerParams): UseTimerResult => {
     remainingTime: state.remainingTime,
     phase: state.phase,
     currentInterval: state.currentInterval,
+    isActive: state.isActive,
     start,
     pause,
   };
