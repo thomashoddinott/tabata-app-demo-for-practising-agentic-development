@@ -197,7 +197,7 @@ describe('useTimer - Phase Transitions', () => {
     expect(result.current.currentInterval).toBe(2);
   });
 
-  it('should complete session after 8th work interval', () => {
+  it('should complete session after 10th work interval', () => {
     const { result } = renderHook(() => useTimer());
 
     act(() => {
@@ -206,20 +206,20 @@ describe('useTimer - Phase Transitions', () => {
 
     // Advance through entire session:
     // Initial prepare: 5s
-    // Then 8 intervals of (work 5s + rest 5s) = 8 * 10s = 80s
-    // But the last interval has no rest, so: 5 + (7 * 10) + 5 = 80s
+    // Then 10 intervals of (work 5s + rest 5s) = 10 * 10s = 100s
+    // But the last interval has no rest, so: 5 + (9 * 10) + 5 = 100s
     act(() => {
       vi.advanceTimersByTime(5000); // Prepare
     });
 
-    // Complete 7 full work+rest cycles
-    for (let i = 0; i < 7; i++) {
+    // Complete 9 full work+rest cycles
+    for (let i = 0; i < 9; i++) {
       act(() => {
         vi.advanceTimersByTime(10000); // Work (5s) + Rest (5s)
       });
     }
 
-    expect(result.current.currentInterval).toBe(8);
+    expect(result.current.currentInterval).toBe(10);
     expect(result.current.phase).toBe('work');
     expect(result.current.remainingTime).toBe(5);
 
@@ -230,6 +230,6 @@ describe('useTimer - Phase Transitions', () => {
 
     expect(result.current.phase).toBe('work');
     expect(result.current.remainingTime).toBe(0);
-    expect(result.current.currentInterval).toBe(8);
+    expect(result.current.currentInterval).toBe(10);
   });
 });

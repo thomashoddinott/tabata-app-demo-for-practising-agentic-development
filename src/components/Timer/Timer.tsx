@@ -1,8 +1,12 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { useTimer } from '../../hooks/useTimer';
 import { useRandomExercises } from '../../hooks/useRandomExercises';
 import { useAudio } from '../../hooks/useAudio';
 import { AUDIO_CONFIG } from '../../constants/audio';
+import { TABATA_CONFIG } from '../../constants/tabata';
+import { IntervalList } from './IntervalList';
+import { ProgressIndicator } from './ProgressIndicator';
+import { buildSessionIntervals, getCurrentSequentialNumber } from '../../utils/sessionBuilder';
 
 export const Timer = () => {
   const { phase, remainingTime, start, currentInterval } = useTimer();
@@ -59,21 +63,48 @@ export const Timer = () => {
     rest: 'Rest',
   };
 
+  // Build session structure once
+  const allIntervals = useMemo(() => buildSessionIntervals(), []);
+
+  // Calculate current position in session
+  const currentSequentialNumber = getCurrentSequentialNumber(phase, currentInterval);
+
+  // Get visible intervals (current + next 5)
+  const visibleIntervals = useMemo(() => {
+    const startIndex = currentSequentialNumber - 1;
+    return allIntervals.slice(startIndex, startIndex + 6);
+  }, [allIntervals, currentSequentialNumber]);
+
   return (
     <div
       data-testid="timer-container"
-      className={`min-h-screen flex flex-col items-center justify-center ${phaseColors[phase]}`}
+      className={`min-h-screen flex flex-col ${phaseColors[phase]}`}
     >
-      <div className="text-white text-center">
-        <div data-testid="exercise-display" className="text-4xl font-medium uppercase mb-8">
-          {exercise}
+      {/* Top section - countdown display */}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div data-testid="exercise-display" className="text-4xl font-medium uppercase mb-8">
+            {exercise}
+          </div>
+          <h1 className="text-5xl font-light mb-8">
+            {phaseLabels[phase]}
+          </h1>
+          <div className="text-9xl font-bold">
+            {remainingTime}
+          </div>
         </div>
-        <h1 className="text-5xl font-light mb-8">
-          {phaseLabels[phase]}
-        </h1>
-        <div className="text-9xl font-bold">
-          {remainingTime}
-        </div>
+      </div>
+
+      {/* Bottom section - interval list and progress */}
+      <div className="pb-8">
+        <IntervalList
+          intervals={visibleIntervals}
+          currentSequentialNumber={currentSequentialNumber}
+        />
+        <ProgressIndicator
+          current={phase === 'prepare' ? 0 : currentInterval}
+          total={TABATA_CONFIG.TOTAL_INTERVALS}
+        />
       </div>
     </div>
   );

@@ -551,4 +551,140 @@ describe('Timer', () => {
       });
     });
   });
+
+  describe('US-9/10: Session Progress and Upcoming Intervals', () => {
+    it('should display interval list at bottom of screen', () => {
+      render(<Timer />);
+
+      const intervalList = screen.getByTestId('interval-list');
+      expect(intervalList).toBeInTheDocument();
+    });
+
+    it('should show current interval + next 5 intervals (6 total visible)', () => {
+      render(<Timer />);
+
+      // During prepare phase (sequential #1), should show intervals 1-6
+      expect(screen.getByTestId('interval-item-1')).toBeInTheDocument();
+      expect(screen.getByTestId('interval-item-2')).toBeInTheDocument();
+      expect(screen.getByTestId('interval-item-3')).toBeInTheDocument();
+      expect(screen.getByTestId('interval-item-4')).toBeInTheDocument();
+      expect(screen.getByTestId('interval-item-5')).toBeInTheDocument();
+      expect(screen.getByTestId('interval-item-6')).toBeInTheDocument();
+
+      // Should not show interval 7 yet
+      expect(screen.queryByTestId('interval-item-7')).not.toBeInTheDocument();
+    });
+
+    it('should highlight current interval in bold', () => {
+      render(<Timer />);
+
+      // During prepare phase, interval 1 should be bold
+      const interval1 = screen.getByTestId('interval-item-1');
+      expect(interval1).toHaveClass('font-bold');
+
+      // Other intervals should not be bold
+      const interval2 = screen.getByTestId('interval-item-2');
+      expect(interval2).toHaveClass('font-normal');
+    });
+
+    it('should display progress indicator below interval list', () => {
+      render(<Timer />);
+
+      const progressIndicator = screen.getByTestId('progress-indicator');
+      expect(progressIndicator).toBeInTheDocument();
+    });
+
+    it('should show 0/10 progress during prepare phase', () => {
+      render(<Timer />);
+
+      const progressIndicator = screen.getByTestId('progress-indicator');
+      expect(progressIndicator).toHaveTextContent('0/10');
+    });
+
+    it('should show 1/10 progress during first work interval', () => {
+      render(<Timer />);
+
+      // Advance through prepare (5s) to first work interval
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      const progressIndicator = screen.getByTestId('progress-indicator');
+      expect(progressIndicator).toHaveTextContent('1/10');
+    });
+
+    it('should show 2/10 progress during second work interval', () => {
+      render(<Timer />);
+
+      // Advance through prepare (5s) + work (5s) + rest (5s) to second work interval
+      act(() => {
+        vi.advanceTimersByTime(15000);
+      });
+
+      const progressIndicator = screen.getByTestId('progress-indicator');
+      expect(progressIndicator).toHaveTextContent('2/10');
+    });
+
+    it('should update visible intervals as session progresses', () => {
+      render(<Timer />);
+
+      // Start: prepare phase, showing intervals 1-6
+      expect(screen.getByTestId('interval-item-1')).toBeInTheDocument();
+      expect(screen.queryByTestId('interval-item-7')).not.toBeInTheDocument();
+
+      // Advance through prepare (5s) to work interval 1 (sequential #2)
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // Now showing intervals 2-7
+      expect(screen.queryByTestId('interval-item-1')).not.toBeInTheDocument();
+      expect(screen.getByTestId('interval-item-2')).toBeInTheDocument();
+      expect(screen.getByTestId('interval-item-7')).toBeInTheDocument();
+
+      // Current interval (2) should be bold
+      const interval2 = screen.getByTestId('interval-item-2');
+      expect(interval2).toHaveClass('font-bold');
+    });
+
+    it('should display intervals in correct format "N. Phase: Duration"', () => {
+      render(<Timer />);
+
+      // Check first few intervals
+      expect(screen.getByTestId('interval-item-1')).toHaveTextContent('1. Prepare: 5');
+      expect(screen.getByTestId('interval-item-2')).toHaveTextContent('2. Work: 5');
+      expect(screen.getByTestId('interval-item-3')).toHaveTextContent('3. Rest: 5');
+    });
+
+    it('should update highlighted interval when transitioning to rest phase', () => {
+      render(<Timer />);
+
+      // Advance through prepare (5s) and work (5s) to rest (sequential #3)
+      act(() => {
+        vi.advanceTimersByTime(10000);
+      });
+
+      // Interval 3 (rest) should now be bold
+      const interval3 = screen.getByTestId('interval-item-3');
+      expect(interval3).toHaveClass('font-bold');
+      expect(interval3).toHaveTextContent('3. Rest: 5');
+
+      // Interval 4 (next work) should not be bold
+      const interval4 = screen.getByTestId('interval-item-4');
+      expect(interval4).toHaveClass('font-normal');
+    });
+
+    it('should show correct progress during rest phase', () => {
+      render(<Timer />);
+
+      // Advance through prepare (5s) and work (5s) to rest
+      act(() => {
+        vi.advanceTimersByTime(10000);
+      });
+
+      // During rest after interval 1, should still show 1/10
+      const progressIndicator = screen.getByTestId('progress-indicator');
+      expect(progressIndicator).toHaveTextContent('1/10');
+    });
+  });
 });
