@@ -38,4 +38,34 @@ describe('Timer', () => {
     expect(screen.getByText('Work')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
   });
+
+  it('should display blue background during prepare phase', () => {
+    render(<Timer />);
+
+    const container = screen.getByTestId('timer-container');
+    expect(container).toHaveClass('bg-prepare');
+  });
+
+  it('should display red background during work phase', () => {
+    render(<Timer />);
+
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+
+    const container = screen.getByTestId('timer-container');
+    expect(container).toHaveClass('bg-work');
+  });
+
+  it('should display green background during rest phase', () => {
+    render(<Timer />);
+
+    // Advance through prepare (5s) and work (5s) to get to rest
+    act(() => {
+      vi.advanceTimersByTime(10000);
+    });
+
+    const container = screen.getByTestId('timer-container');
+    expect(container).toHaveClass('bg-rest');
+  });
 });

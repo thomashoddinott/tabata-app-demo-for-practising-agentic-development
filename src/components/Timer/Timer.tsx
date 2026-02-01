@@ -11,7 +11,7 @@ export const Timer = () => {
   const phaseColors = {
     prepare: 'bg-prepare',
     work: 'bg-work',
-    rest: 'bg-prepare',
+    rest: 'bg-rest',
   };
 
   const phaseLabels = {
@@ -21,7 +21,10 @@ export const Timer = () => {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center ${phaseColors[phase]}`}>
+    <div
+      data-testid="timer-container"
+      className={`min-h-screen flex flex-col items-center justify-center ${phaseColors[phase]}`}
+    >
       <div className="text-white text-center">
         <h1 className="text-5xl font-light mb-8">
           {phaseLabels[phase]}
