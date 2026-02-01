@@ -3,14 +3,17 @@ import { render, screen, act } from '@testing-library/react';
 import { Timer } from './Timer';
 import * as useRandomExercisesModule from '../../hooks/useRandomExercises';
 import { EXERCISES } from '../../constants/exercises';
+import { resetExerciseList } from '../../hooks/useRandomExercises';
 
 describe('Timer', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    resetExerciseList(); // Reset exercise list before each test
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    resetExerciseList(); // Clean up after each test
   });
 
   it('should display initial prepare phase with 5 seconds', () => {
@@ -119,6 +122,110 @@ describe('Timer', () => {
       const exerciseText = exerciseDisplay.textContent;
 
       expect(EXERCISES).toContain(exerciseText as typeof EXERCISES[number]);
+    });
+  });
+
+  describe('US-6: No Exercise Repetition', () => {
+    it('should show exercise 1 during prepare and work of interval 1', () => {
+      render(<Timer />);
+
+      const exerciseDisplay = screen.getByTestId('exercise-display');
+
+      // Prepare phase - should show exercise 1
+      const exerciseDuringPrepare = exerciseDisplay.textContent || '';
+
+      // Advance to work phase
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // Work phase - should still show exercise 1
+      const exerciseDuringWork = exerciseDisplay.textContent || '';
+
+      expect(exerciseDuringPrepare).toBe(exerciseDuringWork);
+      expect(EXERCISES).toContain(exerciseDuringPrepare as typeof EXERCISES[number]);
+    });
+
+    it('should show exercise 2 during rest after interval 1 and during work of interval 2', () => {
+      render(<Timer />);
+
+      const exerciseDisplay = screen.getByTestId('exercise-display');
+
+      // Skip prepare phase
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // Skip work phase
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // Now in rest phase - should show exercise 2 (next exercise)
+      const exerciseDuringRest = exerciseDisplay.textContent || '';
+
+      // Advance to work phase of interval 2
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // Work phase of interval 2 - should still show exercise 2
+      const exerciseDuringWork2 = exerciseDisplay.textContent || '';
+
+      expect(exerciseDuringRest).toBe(exerciseDuringWork2);
+      expect(EXERCISES).toContain(exerciseDuringRest as typeof EXERCISES[number]);
+    });
+
+    it('should display different exercises between work intervals', () => {
+      render(<Timer />);
+
+      const exerciseDisplay = screen.getByTestId('exercise-display');
+
+      // Advance to work phase of interval 1
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      const exercise1 = exerciseDisplay.textContent || '';
+
+      // Advance through work (5s) and rest (5s) to get to work of interval 2
+      act(() => {
+        vi.advanceTimersByTime(10000);
+      });
+
+      const exercise2 = exerciseDisplay.textContent || '';
+
+      // Verify exercises are different
+      expect(exercise1).not.toBe(exercise2);
+      expect(EXERCISES).toContain(exercise1 as typeof EXERCISES[number]);
+      expect(EXERCISES).toContain(exercise2 as typeof EXERCISES[number]);
+    });
+
+    it('should ensure no consecutive duplicates across multiple intervals', () => {
+      render(<Timer />);
+
+      const exerciseDisplay = screen.getByTestId('exercise-display');
+      const exercisesDuringWork: string[] = [];
+
+      // Advance to work phase of interval 1
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // Capture exercises during work phase for first 4 intervals
+      for (let i = 0; i < 4; i++) {
+        exercisesDuringWork.push(exerciseDisplay.textContent || '');
+
+        // Advance through work (5s) and rest (5s) to next work phase
+        act(() => {
+          vi.advanceTimersByTime(10000);
+        });
+      }
+
+      // Verify no consecutive duplicates
+      for (let i = 0; i < exercisesDuringWork.length - 1; i++) {
+        expect(exercisesDuringWork[i]).not.toBe(exercisesDuringWork[i + 1]);
+      }
     });
   });
 });
