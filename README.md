@@ -12,6 +12,8 @@ Voice to text of my thoughts, then I'll tidy up:
 – Had some specific instructions about how I want Claude to handle each user story so that it always enters a planning mode then you know tracks things internally actually what happened here was it? Didn't the first user story? Did it stuck very closely to the plan working in progress learning structure then after that, I didn't do it at all for all the other user stories implemented and then
 
 – I'll pass I'd like improvements. I'd like to pass over this code with maybe some other agents because I just rushed I didn't review things as thoroughly as I'd like to.
+
+Sometimes it didn't sometimes it did not enter the or use the program guardian agent which I expected to use all the time
 ```
 
 # React + TypeScript + Vite
