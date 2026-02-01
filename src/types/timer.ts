@@ -13,3 +13,10 @@ export type SessionConfig = {
   readonly restDuration: number;
   readonly totalIntervals: number;
 };
+
+export type IntervalItem = {
+  readonly sequentialNumber: number;  // 1-16
+  readonly phase: Phase;               // 'prepare' | 'work' | 'rest'
+  readonly duration: number;           // seconds
+  readonly workInterval: number | null; // null for prepare, 1-8 for work/rest
+};
