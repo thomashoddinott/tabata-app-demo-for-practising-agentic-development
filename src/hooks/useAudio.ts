@@ -8,7 +8,7 @@ export const useAudio = () => {
     try {
       // Create or reuse AudioContext
       if (!audioContextRef.current) {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        const AudioContextClass = window.AudioContext || (window as unknown as Window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         audioContextRef.current = new AudioContextClass();
       }
 

@@ -23,15 +23,23 @@ export const Timer = () => {
   // Play countdown beeps at 3, 2, 1 seconds
   useEffect(() => {
     if ([3, 2, 1].includes(remainingTime)) {
-      playBeep(AUDIO_CONFIG.BEEP_FREQUENCY, AUDIO_CONFIG.BEEP_DURATION);
+      // Determine frequency based on current phase (US-8)
+      const frequency = phase === 'work' ? AUDIO_CONFIG.WORK_FREQUENCY : AUDIO_CONFIG.PREPARE_FREQUENCY;
+      playBeep(frequency, AUDIO_CONFIG.BEEP_DURATION);
     }
-  }, [remainingTime, playBeep]);
+  }, [remainingTime, playBeep, phase]);
 
   // Play final beep on phase transition (longer and louder)
   useEffect(() => {
     if (prevPhaseRef.current !== phase) {
+      // Use the frequency of the phase we're transitioning FROM
+      const previousPhase = prevPhaseRef.current;
+      const frequency = previousPhase === 'work'
+        ? AUDIO_CONFIG.WORK_FREQUENCY
+        : AUDIO_CONFIG.PREPARE_FREQUENCY;
+
       playBeep(
-        AUDIO_CONFIG.BEEP_FREQUENCY,
+        frequency,
         AUDIO_CONFIG.FINAL_BEEP_DURATION,
         AUDIO_CONFIG.FINAL_BEEP_VOLUME
       );

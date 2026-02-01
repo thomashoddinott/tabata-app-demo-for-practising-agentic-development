@@ -229,10 +229,37 @@ describe('Timer', () => {
     });
   });
 
-  describe('US-7: Audio Feedback - Countdown Beeps', () => {
-    let mockAudioContext: any;
-    let mockOscillator: any;
-    let mockGainNode: any;
+  describe('US-7 & US-8: Audio Feedback', () => {
+    type MockOscillator = {
+      type: OscillatorType;
+      frequency: { setValueAtTime: ReturnType<typeof vi.fn> };
+      connect: ReturnType<typeof vi.fn>;
+      start: ReturnType<typeof vi.fn>;
+      stop: ReturnType<typeof vi.fn>;
+      disconnect: ReturnType<typeof vi.fn>;
+    };
+
+    type MockGainNode = {
+      gain: {
+        setValueAtTime: ReturnType<typeof vi.fn>;
+        exponentialRampToValueAtTime: ReturnType<typeof vi.fn>;
+      };
+      connect: ReturnType<typeof vi.fn>;
+      disconnect: ReturnType<typeof vi.fn>;
+    };
+
+    type MockAudioContext = {
+      state: AudioContextState;
+      currentTime: number;
+      createOscillator: ReturnType<typeof vi.fn>;
+      createGain: ReturnType<typeof vi.fn>;
+      destination: AudioDestinationNode;
+      resume: ReturnType<typeof vi.fn>;
+    };
+
+    let mockAudioContext: MockAudioContext;
+    let mockOscillator: MockOscillator;
+    let mockGainNode: MockGainNode;
 
     beforeEach(() => {
       // Create fresh audio mocks for each test
@@ -259,13 +286,13 @@ describe('Timer', () => {
         currentTime: 0,
         createOscillator: vi.fn(() => mockOscillator),
         createGain: vi.fn(() => mockGainNode),
-        destination: {},
+        destination: {} as AudioDestinationNode,
         resume: vi.fn(),
       };
 
       window.AudioContext = vi.fn(function() {
         return mockAudioContext;
-      }) as any;
+      }) as unknown as typeof AudioContext;
     });
 
     it('should play beep when countdown reaches 3 seconds during prepare phase', () => {
@@ -415,6 +442,113 @@ describe('Timer', () => {
       const calls = mockOscillator.stop.mock.calls;
       const lastCall = calls[calls.length - 1];
       expect(lastCall[0]).toBe(mockAudioContext.currentTime + 0.3);
+    });
+
+    describe('US-8: Different Tones for Phase Types', () => {
+      it('should use prepare tone frequency during prepare phase countdown', () => {
+        render(<Timer />);
+
+        // Clear previous calls
+        mockOscillator.frequency.setValueAtTime.mockClear();
+
+        // Advance to 3 seconds remaining in prepare phase
+        act(() => {
+          vi.advanceTimersByTime(2000);
+        });
+
+        // Should use prepare frequency (800Hz)
+        expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
+          800,
+          mockAudioContext.currentTime
+        );
+      });
+
+      it('should use work tone frequency during work phase countdown', () => {
+        render(<Timer />);
+
+        // Advance through prepare phase to work phase
+        act(() => {
+          vi.advanceTimersByTime(5000);
+        });
+
+        // Clear previous calls
+        mockOscillator.frequency.setValueAtTime.mockClear();
+
+        // Advance to 3 seconds remaining in work phase
+        act(() => {
+          vi.advanceTimersByTime(2000);
+        });
+
+        // Should use work frequency (1200Hz)
+        expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
+          1200,
+          mockAudioContext.currentTime
+        );
+      });
+
+      it('should use rest tone frequency during rest phase countdown', () => {
+        render(<Timer />);
+
+        // Advance through prepare and work phases to rest
+        act(() => {
+          vi.advanceTimersByTime(10000);
+        });
+
+        // Clear previous calls
+        mockOscillator.frequency.setValueAtTime.mockClear();
+
+        // Advance to 3 seconds remaining in rest phase
+        act(() => {
+          vi.advanceTimersByTime(2000);
+        });
+
+        // Should use rest frequency (800Hz, same as prepare)
+        expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
+          800,
+          mockAudioContext.currentTime
+        );
+      });
+
+      it('should use prepare tone for phase transition beep from prepare to work', () => {
+        render(<Timer />);
+
+        // Clear previous calls
+        mockOscillator.frequency.setValueAtTime.mockClear();
+
+        // Advance to phase transition (end of prepare)
+        act(() => {
+          vi.advanceTimersByTime(5000);
+        });
+
+        // Should use prepare frequency for the transition beep
+        expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
+          800,
+          mockAudioContext.currentTime
+        );
+      });
+
+      it('should use work tone for phase transition beep from work to rest', () => {
+        render(<Timer />);
+
+        // Advance to end of prepare phase
+        act(() => {
+          vi.advanceTimersByTime(5000);
+        });
+
+        // Clear previous calls
+        mockOscillator.frequency.setValueAtTime.mockClear();
+
+        // Advance to end of work phase (transition to rest)
+        act(() => {
+          vi.advanceTimersByTime(5000);
+        });
+
+        // Should use work frequency for the transition beep
+        expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
+          1200,
+          mockAudioContext.currentTime
+        );
+      });
     });
   });
 });
