@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import { Timer } from './Timer';
+import * as useRandomExercisesModule from '../../hooks/useRandomExercises';
+import { EXERCISES } from '../../constants/exercises';
 
 describe('Timer', () => {
   beforeEach(() => {
@@ -67,5 +69,55 @@ describe('Timer', () => {
 
     const container = screen.getByTestId('timer-container');
     expect(container).toHaveClass('bg-rest');
+  });
+
+  describe('Exercise Display', () => {
+    it('should display exercise during prepare phase', () => {
+      vi.spyOn(useRandomExercisesModule, 'useRandomExercises').mockReturnValue('Burpees');
+
+      render(<Timer />);
+
+      const exerciseDisplay = screen.getByTestId('exercise-display');
+      expect(exerciseDisplay).toBeInTheDocument();
+      expect(exerciseDisplay).toHaveTextContent('Burpees');
+    });
+
+    it('should display exercise during rest phase', () => {
+      vi.spyOn(useRandomExercisesModule, 'useRandomExercises').mockReturnValue('Push-ups');
+
+      render(<Timer />);
+
+      // Advance through prepare (5s) and work (5s) to get to rest
+      act(() => {
+        vi.advanceTimersByTime(10000);
+      });
+
+      const exerciseDisplay = screen.getByTestId('exercise-display');
+      expect(exerciseDisplay).toBeInTheDocument();
+      expect(exerciseDisplay).toHaveTextContent('Push-ups');
+    });
+
+    it('should NOT display exercise during work phase', () => {
+      vi.spyOn(useRandomExercisesModule, 'useRandomExercises').mockReturnValue('Squats');
+
+      render(<Timer />);
+
+      // Advance through prepare (5s) to get to work
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      const exerciseDisplay = screen.queryByTestId('exercise-display');
+      expect(exerciseDisplay).not.toBeInTheDocument();
+    });
+
+    it('should display an exercise from the EXERCISES pool', () => {
+      render(<Timer />);
+
+      const exerciseDisplay = screen.getByTestId('exercise-display');
+      const exerciseText = exerciseDisplay.textContent;
+
+      expect(EXERCISES).toContain(exerciseText as typeof EXERCISES[number]);
+    });
   });
 });
