@@ -21,25 +21,25 @@ Build a randomized Tabata timer app that displays which exercise to perform duri
 ## 📋 User Stories
 
 ### Epic 1: Core Timer Functionality
-- [US-1: Start a Tabata Session](user-stories/1-core-timer-functionality/US-1.md)
-- [US-2: View Countdown Timer](user-stories/1-core-timer-functionality/US-2.md)
-- [US-3: See Current Phase (Prepare vs Work)](user-stories/1-core-timer-functionality/US-3.md)
+- [US-1: Start a Tabata Session](original-user-stories/1-core-timer-functionality/US-1.md)
+- [US-2: View Countdown Timer](original-user-stories/1-core-timer-functionality/US-2.md)
+- [US-3: See Current Phase (Prepare vs Work)](original-user-stories/1-core-timer-functionality/US-3.md)
 
 ### Epic 2: Randomized Exercise Display
-- [US-4: See Next Exercise During Prepare Phase](user-stories/2-randomized-exercise-display/US-4.md)
-- [US-5: See Current Exercise During Work Phase](user-stories/2-randomized-exercise-display/US-5.md)
-- [US-6: No Exercise Repetition Back-to-Back](user-stories/2-randomized-exercise-display/US-6.md)
+- [US-4: See Next Exercise During Prepare Phase](original-user-stories/2-randomized-exercise-display/US-4.md)
+- [US-5: See Current Exercise During Work Phase](original-user-stories/2-randomized-exercise-display/US-5.md)
+- [US-6: No Exercise Repetition Back-to-Back](original-user-stories/2-randomized-exercise-display/US-6.md)
 
 ### Epic 3: Audio Feedback
-- [US-7: Countdown Beeps](user-stories/3-audio-feedback/US-7.md)
-- [US-8: Different Tones for Phase Types](user-stories/3-audio-feedback/US-8.md)
+- [US-7: Countdown Beeps](original-user-stories/3-audio-feedback/US-7.md)
+- [US-8: Different Tones for Phase Types](original-user-stories/3-audio-feedback/US-8.md)
 
 ### Epic 4: Session Progress Indicators
-- [US-9/10: View Session Progress and Upcoming Intervals](user-stories/4-session-progress/US-9-10-combined.md) *(Merged from US-9 and US-10 - both features are tightly coupled)*
+- [US-9/10: View Session Progress and Upcoming Intervals](original-user-stories/4-session-progress/US-9-10-combined.md) *(Merged from US-9 and US-10 - both features are tightly coupled)*
 
 ### Epic 5: Session Control
-- [US-11: Pause/Resume Session](user-stories/5-session-control/US-11.md)
-- [US-12: Navigate Between Intervals](user-stories/5-session-control/US-12.md) *(Optional/Future)*
+- [US-11: Pause/Resume Session](original-user-stories/5-session-control/US-11.md)
+- [US-12: Navigate Between Intervals](original-user-stories/5-session-control/US-12.md) *(Optional/Future)*
 
 ## 🏗️ Technical Implementation
 
