@@ -31,10 +31,49 @@ vi.mock('./constants/tabata', () => ({
   },
 }));
 
+vi.mock('./constants/audio', () => ({
+  AUDIO_CONFIG: {
+    PREPARE_FREQUENCY: 800,
+    WORK_FREQUENCY: 1200,
+    BEEP_DURATION: 150,
+    BEEP_VOLUME: 0.3,
+    FINAL_BEEP_DURATION: 300,
+    FINAL_BEEP_VOLUME: 0.5,
+  },
+}));
+
 describe('App - Integration', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     resetExerciseList();
+
+    // Mock AudioContext for useAudio hook
+    const mockAudioContext = {
+      state: 'running',
+      currentTime: 0,
+      createOscillator: vi.fn(() => ({
+        type: 'sine',
+        frequency: { setValueAtTime: vi.fn() },
+        connect: vi.fn(),
+        start: vi.fn(),
+        stop: vi.fn(),
+        disconnect: vi.fn(),
+      })),
+      createGain: vi.fn(() => ({
+        gain: {
+          setValueAtTime: vi.fn(),
+          exponentialRampToValueAtTime: vi.fn(),
+        },
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+      })),
+      destination: {},
+      resume: vi.fn(),
+    };
+
+    window.AudioContext = vi.fn(function() {
+      return mockAudioContext;
+    }) as unknown as typeof AudioContext;
   });
 
   afterEach(() => {

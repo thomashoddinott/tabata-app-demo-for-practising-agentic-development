@@ -72,11 +72,34 @@ describe('useAudio', () => {
     vi.clearAllMocks();
   });
 
-  it('should return playBeep function', () => {
+  it('should return initAudio and playBeep functions', () => {
     const { result } = renderHook(() => useAudio());
 
+    expect(result.current.initAudio).toBeDefined();
+    expect(typeof result.current.initAudio).toBe('function');
     expect(result.current.playBeep).toBeDefined();
     expect(typeof result.current.playBeep).toBe('function');
+  });
+
+  it('should create and resume AudioContext when initAudio is called', () => {
+    mockAudioContext.state = 'suspended';
+    const { result } = renderHook(() => useAudio());
+
+    result.current.initAudio();
+
+    expect(window.AudioContext).toHaveBeenCalled();
+    expect(mockAudioContext.resume).toHaveBeenCalled();
+  });
+
+  it('should handle initAudio failure gracefully', () => {
+    window.AudioContext = vi.fn(function() {
+      throw new Error('AudioContext not supported');
+    }) as unknown as typeof AudioContext;
+
+    const { result } = renderHook(() => useAudio());
+
+    // Should not throw
+    expect(() => result.current.initAudio()).not.toThrow();
   });
 
   it('should create AudioContext when playBeep is called', () => {

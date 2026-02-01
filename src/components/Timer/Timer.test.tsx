@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, renderHook } from '@testing-library/react';
 import { Timer } from './Timer';
 import * as useRandomExercisesModule from '../../hooks/useRandomExercises';
 import { resetExerciseList } from '../../hooks/useRandomExercises';
+import { useAudio } from '../../hooks/useAudio';
 
 // Mock the constants modules with test-specific values (independent of production constants)
 vi.mock('../../constants/exercises', () => ({
@@ -44,9 +45,12 @@ vi.mock('../../constants/audio', () => ({
 }));
 
 describe('Timer', () => {
+  const mockPlayBeep = vi.fn();
+
   beforeEach(() => {
     vi.useFakeTimers();
     resetExerciseList(); // Reset exercise list before each test
+    mockPlayBeep.mockClear();
   });
 
   afterEach(() => {
@@ -55,14 +59,14 @@ describe('Timer', () => {
   });
 
   it('should display initial prepare phase with 5 seconds', () => {
-    render(<Timer />);
+    render(<Timer playBeep={mockPlayBeep} />);
 
     expect(screen.getByText('Prepare')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
   });
 
   it('should countdown when started', () => {
-    render(<Timer />);
+    render(<Timer playBeep={mockPlayBeep} />);
 
     act(() => {
       vi.advanceTimersByTime(1000);
@@ -72,7 +76,7 @@ describe('Timer', () => {
   });
 
   it('should transition to work phase after prepare completes', () => {
-    render(<Timer />);
+    render(<Timer playBeep={mockPlayBeep} />);
 
     act(() => {
       vi.advanceTimersByTime(5000);
@@ -83,14 +87,14 @@ describe('Timer', () => {
   });
 
   it('should display blue background during prepare phase', () => {
-    render(<Timer />);
+    render(<Timer playBeep={mockPlayBeep} />);
 
     const container = screen.getByTestId('timer-container');
     expect(container).toHaveClass('bg-prepare');
   });
 
   it('should display red background during work phase', () => {
-    render(<Timer />);
+    render(<Timer playBeep={mockPlayBeep} />);
 
     act(() => {
       vi.advanceTimersByTime(5000);
@@ -101,7 +105,7 @@ describe('Timer', () => {
   });
 
   it('should display green background during rest phase', () => {
-    render(<Timer />);
+    render(<Timer playBeep={mockPlayBeep} />);
 
     // Advance through prepare (5s) and work (5s) to get to rest
     act(() => {
@@ -116,7 +120,7 @@ describe('Timer', () => {
     it('should display exercise during prepare phase', () => {
       vi.spyOn(useRandomExercisesModule, 'useRandomExercises').mockReturnValue('Burpees');
 
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       const exerciseDisplay = screen.getByTestId('exercise-display');
       expect(exerciseDisplay).toBeInTheDocument();
@@ -126,7 +130,7 @@ describe('Timer', () => {
     it('should display exercise during rest phase', () => {
       vi.spyOn(useRandomExercisesModule, 'useRandomExercises').mockReturnValue('Push-ups');
 
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       // Advance through prepare (5s) and work (5s) to get to rest
       act(() => {
@@ -141,7 +145,7 @@ describe('Timer', () => {
     it('should display exercise during work phase', () => {
       vi.spyOn(useRandomExercisesModule, 'useRandomExercises').mockReturnValue('Squats');
 
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       // Advance through prepare (5s) to get to work
       act(() => {
@@ -154,7 +158,7 @@ describe('Timer', () => {
     });
 
     it('should display an exercise from the EXERCISES pool', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       const exerciseDisplay = screen.getByTestId('exercise-display');
       const exerciseText = exerciseDisplay.textContent;
@@ -165,7 +169,7 @@ describe('Timer', () => {
 
   describe('US-6: No Exercise Repetition', () => {
     it('should show exercise 1 during prepare and work of interval 1', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       const exerciseDisplay = screen.getByTestId('exercise-display');
 
@@ -185,7 +189,7 @@ describe('Timer', () => {
     });
 
     it('should show exercise 2 during rest after interval 1 and during work of interval 2', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       const exerciseDisplay = screen.getByTestId('exercise-display');
 
@@ -215,7 +219,7 @@ describe('Timer', () => {
     });
 
     it('should display different exercises between work intervals', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       const exerciseDisplay = screen.getByTestId('exercise-display');
 
@@ -240,7 +244,7 @@ describe('Timer', () => {
     });
 
     it('should ensure no consecutive duplicates across multiple intervals', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       const exerciseDisplay = screen.getByTestId('exercise-display');
       const exercisesDuringWork: string[] = [];
@@ -298,6 +302,7 @@ describe('Timer', () => {
     let mockAudioContext: MockAudioContext;
     let mockOscillator: MockOscillator;
     let mockGainNode: MockGainNode;
+    let audioPlayBeep: (frequency: number, duration: number, volume?: number) => void;
 
     beforeEach(() => {
       // Create fresh audio mocks for each test
@@ -331,10 +336,14 @@ describe('Timer', () => {
       window.AudioContext = vi.fn(function() {
         return mockAudioContext;
       }) as unknown as typeof AudioContext;
+
+      // Create a real playBeep function using useAudio hook
+      const { result } = renderHook(() => useAudio());
+      audioPlayBeep = result.current.playBeep;
     });
 
     it('should play beep when countdown reaches 3 seconds during prepare phase', () => {
-      render(<Timer />);
+      render(<Timer playBeep={audioPlayBeep} />);
 
       // Advance to 3 seconds remaining (from 5 to 3)
       act(() => {
@@ -345,7 +354,7 @@ describe('Timer', () => {
     });
 
     it('should play beep when countdown reaches 2 seconds', () => {
-      render(<Timer />);
+      render(<Timer playBeep={audioPlayBeep} />);
 
       // Advance to 2 seconds remaining
       act(() => {
@@ -356,7 +365,7 @@ describe('Timer', () => {
     });
 
     it('should play beep when countdown reaches 1 second', () => {
-      render(<Timer />);
+      render(<Timer playBeep={audioPlayBeep} />);
 
       // Advance to 1 second remaining
       act(() => {
@@ -367,7 +376,7 @@ describe('Timer', () => {
     });
 
     it('should play beep at 0 seconds (phase transition)', () => {
-      render(<Timer />);
+      render(<Timer playBeep={audioPlayBeep} />);
 
       // Clear previous calls
       mockAudioContext.createOscillator.mockClear();
@@ -381,7 +390,7 @@ describe('Timer', () => {
     });
 
     it('should play beeps during work phase', () => {
-      render(<Timer />);
+      render(<Timer playBeep={audioPlayBeep} />);
 
       // Advance through prepare phase to work phase
       act(() => {
@@ -400,7 +409,7 @@ describe('Timer', () => {
     });
 
     it('should play beeps during rest phase', () => {
-      render(<Timer />);
+      render(<Timer playBeep={audioPlayBeep} />);
 
       // Advance through prepare and work phases to rest
       act(() => {
@@ -419,7 +428,7 @@ describe('Timer', () => {
     });
 
     it('should play total of 4 beeps per phase (at 3, 2, 1, 0 seconds)', () => {
-      render(<Timer />);
+      render(<Timer playBeep={audioPlayBeep} />);
 
       // Count beeps during prepare phase
       const initialCallCount = mockAudioContext.createOscillator.mock.calls.length;
@@ -449,7 +458,7 @@ describe('Timer', () => {
     });
 
     it('should play final beep with louder volume on phase transition', () => {
-      render(<Timer />);
+      render(<Timer playBeep={audioPlayBeep} />);
 
       // Clear previous calls
       mockGainNode.gain.setValueAtTime.mockClear();
@@ -466,7 +475,7 @@ describe('Timer', () => {
     });
 
     it('should play final beep with longer duration on phase transition', () => {
-      render(<Timer />);
+      render(<Timer playBeep={audioPlayBeep} />);
 
       // Clear previous calls
       mockOscillator.stop.mockClear();
@@ -484,7 +493,7 @@ describe('Timer', () => {
 
     describe('US-8: Different Tones for Phase Types', () => {
       it('should use prepare tone frequency during prepare phase countdown', () => {
-        render(<Timer />);
+        render(<Timer playBeep={audioPlayBeep} />);
 
         // Clear previous calls
         mockOscillator.frequency.setValueAtTime.mockClear();
@@ -502,7 +511,7 @@ describe('Timer', () => {
       });
 
       it('should use work tone frequency during work phase countdown', () => {
-        render(<Timer />);
+        render(<Timer playBeep={audioPlayBeep} />);
 
         // Advance through prepare phase to work phase
         act(() => {
@@ -525,7 +534,7 @@ describe('Timer', () => {
       });
 
       it('should use rest tone frequency during rest phase countdown', () => {
-        render(<Timer />);
+        render(<Timer playBeep={audioPlayBeep} />);
 
         // Advance through prepare and work phases to rest
         act(() => {
@@ -548,7 +557,7 @@ describe('Timer', () => {
       });
 
       it('should use prepare tone for phase transition beep from prepare to work', () => {
-        render(<Timer />);
+        render(<Timer playBeep={audioPlayBeep} />);
 
         // Clear previous calls
         mockOscillator.frequency.setValueAtTime.mockClear();
@@ -566,7 +575,7 @@ describe('Timer', () => {
       });
 
       it('should use work tone for phase transition beep from work to rest', () => {
-        render(<Timer />);
+        render(<Timer playBeep={audioPlayBeep} />);
 
         // Advance to end of prepare phase
         act(() => {
@@ -592,14 +601,14 @@ describe('Timer', () => {
 
   describe('US-9/10: Session Progress and Upcoming Intervals', () => {
     it('should display interval list at bottom of screen', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       const intervalList = screen.getByTestId('interval-list');
       expect(intervalList).toBeInTheDocument();
     });
 
     it('should show current interval + next 5 intervals (6 total visible)', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       // During prepare phase (sequential #1), should show intervals 1-6
       expect(screen.getByTestId('interval-item-1')).toBeInTheDocument();
@@ -614,7 +623,7 @@ describe('Timer', () => {
     });
 
     it('should highlight current interval in bold', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       // During prepare phase, interval 1 should be bold
       const interval1 = screen.getByTestId('interval-item-1');
@@ -626,21 +635,21 @@ describe('Timer', () => {
     });
 
     it('should display progress indicator below interval list', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       const progressIndicator = screen.getByTestId('progress-indicator');
       expect(progressIndicator).toBeInTheDocument();
     });
 
     it('should show 0/10 progress during prepare phase', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       const progressIndicator = screen.getByTestId('progress-indicator');
       expect(progressIndicator).toHaveTextContent('0/10');
     });
 
     it('should show 1/10 progress during first work interval', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       // Advance through prepare (5s) to first work interval
       act(() => {
@@ -652,7 +661,7 @@ describe('Timer', () => {
     });
 
     it('should show 2/10 progress during second work interval', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       // Advance through prepare (5s) + work (5s) + rest (5s) to second work interval
       act(() => {
@@ -664,7 +673,7 @@ describe('Timer', () => {
     });
 
     it('should update visible intervals as session progresses', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       // Start: prepare phase, showing intervals 1-6
       expect(screen.getByTestId('interval-item-1')).toBeInTheDocument();
@@ -686,7 +695,7 @@ describe('Timer', () => {
     });
 
     it('should display intervals in correct format "N. Phase: Duration"', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       // Check first few intervals
       expect(screen.getByTestId('interval-item-1')).toHaveTextContent('1. Prepare: 5');
@@ -695,7 +704,7 @@ describe('Timer', () => {
     });
 
     it('should update highlighted interval when transitioning to rest phase', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       // Advance through prepare (5s) and work (5s) to rest (sequential #3)
       act(() => {
@@ -713,7 +722,7 @@ describe('Timer', () => {
     });
 
     it('should show correct progress during rest phase', () => {
-      render(<Timer />);
+      render(<Timer playBeep={mockPlayBeep} />);
 
       // Advance through prepare (5s) and work (5s) to rest
       act(() => {

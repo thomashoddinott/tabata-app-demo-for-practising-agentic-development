@@ -1,16 +1,18 @@
 import { useEffect, useRef, useMemo } from 'react';
 import { useTimer } from '../../hooks/useTimer';
 import { useRandomExercises } from '../../hooks/useRandomExercises';
-import { useAudio } from '../../hooks/useAudio';
 import { AUDIO_CONFIG } from '../../constants/audio';
 import { TABATA_CONFIG } from '../../constants/tabata';
 import { IntervalList } from './IntervalList';
 import { ProgressIndicator } from './ProgressIndicator';
 import { buildSessionIntervals, getCurrentSequentialNumber } from '../../utils/sessionBuilder';
 
-export const Timer = () => {
+type TimerProps = {
+  readonly playBeep: (frequency: number, duration: number, volume?: number) => void;
+};
+
+export const Timer = ({ playBeep }: TimerProps) => {
   const { phase, remainingTime, start, currentInterval } = useTimer();
-  const { playBeep } = useAudio();
   const prevPhaseRef = useRef(phase);
 
   // Determine which exercise to display based on the phase:

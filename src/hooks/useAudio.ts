@@ -4,9 +4,28 @@ import { AUDIO_CONFIG } from '../constants/audio';
 export const useAudio = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
 
+  const initAudio = useCallback(() => {
+    try {
+      // Create AudioContext if it doesn't exist
+      if (!audioContextRef.current) {
+        const AudioContextClass = window.AudioContext || (window as unknown as Window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        audioContextRef.current = new AudioContextClass();
+      }
+
+      const audioCtx = audioContextRef.current;
+
+      // Resume context if suspended (critical for iOS)
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    } catch (error) {
+      console.warn('Audio initialization failed:', error);
+    }
+  }, []);
+
   const playBeep = useCallback((frequency: number, duration: number, volume: number = AUDIO_CONFIG.BEEP_VOLUME) => {
     try {
-      // Create or reuse AudioContext
+      // Ensure AudioContext exists
       if (!audioContextRef.current) {
         const AudioContextClass = window.AudioContext || (window as unknown as Window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         audioContextRef.current = new AudioContextClass();
@@ -41,5 +60,5 @@ export const useAudio = () => {
     }
   }, []);
 
-  return { playBeep };
+  return { initAudio, playBeep };
 };
