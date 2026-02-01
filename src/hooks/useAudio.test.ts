@@ -2,10 +2,37 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useAudio } from './useAudio';
 
+type MockOscillator = {
+  type: OscillatorType;
+  frequency: { setValueAtTime: ReturnType<typeof vi.fn> };
+  connect: ReturnType<typeof vi.fn>;
+  start: ReturnType<typeof vi.fn>;
+  stop: ReturnType<typeof vi.fn>;
+  disconnect: ReturnType<typeof vi.fn>;
+};
+
+type MockGainNode = {
+  gain: {
+    setValueAtTime: ReturnType<typeof vi.fn>;
+    exponentialRampToValueAtTime: ReturnType<typeof vi.fn>;
+  };
+  connect: ReturnType<typeof vi.fn>;
+  disconnect: ReturnType<typeof vi.fn>;
+};
+
+type MockAudioContext = {
+  state: AudioContextState;
+  currentTime: number;
+  createOscillator: ReturnType<typeof vi.fn>;
+  createGain: ReturnType<typeof vi.fn>;
+  destination: AudioDestinationNode;
+  resume: ReturnType<typeof vi.fn>;
+};
+
 describe('useAudio', () => {
-  let mockOscillator: any;
-  let mockGainNode: any;
-  let mockAudioContext: any;
+  let mockOscillator: MockOscillator;
+  let mockGainNode: MockGainNode;
+  let mockAudioContext: MockAudioContext;
 
   beforeEach(() => {
     // Create fresh mocks for each test
@@ -32,13 +59,13 @@ describe('useAudio', () => {
       currentTime: 0,
       createOscillator: vi.fn(() => mockOscillator),
       createGain: vi.fn(() => mockGainNode),
-      destination: {},
+      destination: {} as AudioDestinationNode,
       resume: vi.fn(),
     };
 
     window.AudioContext = vi.fn(function() {
       return mockAudioContext;
-    }) as any;
+    }) as unknown as typeof AudioContext;
   });
 
   afterEach(() => {
@@ -140,7 +167,7 @@ describe('useAudio', () => {
   it('should handle AudioContext creation failure gracefully', () => {
     window.AudioContext = vi.fn(function() {
       throw new Error('AudioContext not supported');
-    }) as any;
+    }) as unknown as typeof AudioContext;
 
     const { result } = renderHook(() => useAudio());
 

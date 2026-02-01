@@ -10,3 +10,6 @@
 - [ ] Format: "N. Prepare: 5" and "N. Work: 60"
 - [ ] Current interval is highlighted or distinguished
 - [ ] At least 5-6 upcoming intervals visible
+
+## Resources
+See project_context/ui-inspiration

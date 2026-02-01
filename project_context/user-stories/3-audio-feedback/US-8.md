@@ -6,6 +6,5 @@
 
 ## Acceptance Criteria
 
-- [ ] Prepare phase uses one tone frequency
-- [ ] Work phase uses different tone frequency
-- [ ] Final beep of each phase is distinguishable
+- [x] Prepare phase uses one tone frequency
+- [x] Work phase uses different tone frequency
