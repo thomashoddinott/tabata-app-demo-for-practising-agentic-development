@@ -97,7 +97,7 @@ describe('Timer', () => {
       expect(exerciseDisplay).toHaveTextContent('Push-ups');
     });
 
-    it('should NOT display exercise during work phase', () => {
+    it('should display exercise during work phase', () => {
       vi.spyOn(useRandomExercisesModule, 'useRandomExercises').mockReturnValue('Squats');
 
       render(<Timer />);
@@ -107,8 +107,9 @@ describe('Timer', () => {
         vi.advanceTimersByTime(5000);
       });
 
-      const exerciseDisplay = screen.queryByTestId('exercise-display');
-      expect(exerciseDisplay).not.toBeInTheDocument();
+      const exerciseDisplay = screen.getByTestId('exercise-display');
+      expect(exerciseDisplay).toBeInTheDocument();
+      expect(exerciseDisplay).toHaveTextContent('Squats');
     });
 
     it('should display an exercise from the EXERCISES pool', () => {
