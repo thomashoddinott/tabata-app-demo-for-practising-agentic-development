@@ -1,9 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTimer } from '../../hooks/useTimer';
 import { useRandomExercises } from '../../hooks/useRandomExercises';
+import { useAudio } from '../../hooks/useAudio';
+import { AUDIO_CONFIG } from '../../constants/audio';
 
 export const Timer = () => {
   const { phase, remainingTime, start, currentInterval } = useTimer();
+  const { playBeep } = useAudio();
+  const prevPhaseRef = useRef(phase);
 
   // Determine which exercise to display based on the phase:
   // - prepare: show exercise 1 (first exercise)
@@ -15,6 +19,25 @@ export const Timer = () => {
   useEffect(() => {
     start();
   }, [start]);
+
+  // Play countdown beeps at 3, 2, 1 seconds
+  useEffect(() => {
+    if ([3, 2, 1].includes(remainingTime)) {
+      playBeep(AUDIO_CONFIG.BEEP_FREQUENCY, AUDIO_CONFIG.BEEP_DURATION);
+    }
+  }, [remainingTime, playBeep]);
+
+  // Play final beep on phase transition (longer and louder)
+  useEffect(() => {
+    if (prevPhaseRef.current !== phase) {
+      playBeep(
+        AUDIO_CONFIG.BEEP_FREQUENCY,
+        AUDIO_CONFIG.FINAL_BEEP_DURATION,
+        AUDIO_CONFIG.FINAL_BEEP_VOLUME
+      );
+      prevPhaseRef.current = phase;
+    }
+  }, [phase, playBeep]);
 
   const phaseColors = {
     prepare: 'bg-prepare',

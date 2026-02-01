@@ -228,4 +228,193 @@ describe('Timer', () => {
       }
     });
   });
+
+  describe('US-7: Audio Feedback - Countdown Beeps', () => {
+    let mockAudioContext: any;
+    let mockOscillator: any;
+    let mockGainNode: any;
+
+    beforeEach(() => {
+      // Create fresh audio mocks for each test
+      mockOscillator = {
+        type: 'sine',
+        frequency: { setValueAtTime: vi.fn() },
+        connect: vi.fn(),
+        start: vi.fn(),
+        stop: vi.fn(),
+        disconnect: vi.fn(),
+      };
+
+      mockGainNode = {
+        gain: {
+          setValueAtTime: vi.fn(),
+          exponentialRampToValueAtTime: vi.fn(),
+        },
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+      };
+
+      mockAudioContext = {
+        state: 'running',
+        currentTime: 0,
+        createOscillator: vi.fn(() => mockOscillator),
+        createGain: vi.fn(() => mockGainNode),
+        destination: {},
+        resume: vi.fn(),
+      };
+
+      window.AudioContext = vi.fn(function() {
+        return mockAudioContext;
+      }) as any;
+    });
+
+    it('should play beep when countdown reaches 3 seconds during prepare phase', () => {
+      render(<Timer />);
+
+      // Advance to 3 seconds remaining (from 5 to 3)
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+    });
+
+    it('should play beep when countdown reaches 2 seconds', () => {
+      render(<Timer />);
+
+      // Advance to 2 seconds remaining
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+    });
+
+    it('should play beep when countdown reaches 1 second', () => {
+      render(<Timer />);
+
+      // Advance to 1 second remaining
+      act(() => {
+        vi.advanceTimersByTime(4000);
+      });
+
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+    });
+
+    it('should play beep at 0 seconds (phase transition)', () => {
+      render(<Timer />);
+
+      // Clear previous calls
+      mockAudioContext.createOscillator.mockClear();
+
+      // Advance to 0 seconds (phase transition)
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+    });
+
+    it('should play beeps during work phase', () => {
+      render(<Timer />);
+
+      // Advance through prepare phase to work phase
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // Clear calls from prepare phase
+      mockAudioContext.createOscillator.mockClear();
+
+      // Advance to 3 seconds remaining in work phase
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+    });
+
+    it('should play beeps during rest phase', () => {
+      render(<Timer />);
+
+      // Advance through prepare and work phases to rest
+      act(() => {
+        vi.advanceTimersByTime(10000);
+      });
+
+      // Clear calls from previous phases
+      mockAudioContext.createOscillator.mockClear();
+
+      // Advance to 3 seconds remaining in rest phase
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+    });
+
+    it('should play total of 4 beeps per phase (at 3, 2, 1, 0 seconds)', () => {
+      render(<Timer />);
+
+      // Count beeps during prepare phase
+      const initialCallCount = mockAudioContext.createOscillator.mock.calls.length;
+
+      // Advance through entire prepare phase second by second to ensure all effects run
+      act(() => {
+        vi.advanceTimersByTime(1000); // 4 seconds remaining
+      });
+      act(() => {
+        vi.advanceTimersByTime(1000); // 3 seconds remaining - beep!
+      });
+      act(() => {
+        vi.advanceTimersByTime(1000); // 2 seconds remaining - beep!
+      });
+      act(() => {
+        vi.advanceTimersByTime(1000); // 1 second remaining - beep!
+      });
+      act(() => {
+        vi.advanceTimersByTime(1000); // 0 seconds - phase transition beep!
+      });
+
+      const finalCallCount = mockAudioContext.createOscillator.mock.calls.length;
+      const beepsPlayed = finalCallCount - initialCallCount;
+
+      // Should have beeps at: 3, 2, 1, 0 = 4 beeps
+      expect(beepsPlayed).toBe(4);
+    });
+
+    it('should play final beep with louder volume on phase transition', () => {
+      render(<Timer />);
+
+      // Clear previous calls
+      mockGainNode.gain.setValueAtTime.mockClear();
+
+      // Advance to phase transition
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // The most recent call should be the final beep with higher volume (0.5)
+      const calls = mockGainNode.gain.setValueAtTime.mock.calls;
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall[0]).toBe(0.5); // FINAL_BEEP_VOLUME
+    });
+
+    it('should play final beep with longer duration on phase transition', () => {
+      render(<Timer />);
+
+      // Clear previous calls
+      mockOscillator.stop.mockClear();
+
+      // Advance to phase transition
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      // The most recent stop call should use 0.3 seconds (300ms FINAL_BEEP_DURATION)
+      const calls = mockOscillator.stop.mock.calls;
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall[0]).toBe(mockAudioContext.currentTime + 0.3);
+    });
+  });
 });
