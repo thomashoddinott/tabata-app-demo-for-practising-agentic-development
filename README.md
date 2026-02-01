@@ -1,22 +1,30 @@
 # About
-```
-Voice to text of my thoughts, then I'll tidy up:
-- I'm testing an Agentic TDD dev flow
-- I basically dictated a big wall of text into Claude and had it come up with a user stories for me. First thing that went wrong was actually the user stories weren't perfectly defined and I rushed a bit because I was just eager to see how fast I could do it second time around I would take more time on the user stories sounds obvious but I didn't this time cause I was rushing.
-– Then I copied some agents in from a experienced Dave who's been using Claude with TDD.
-– And I went use a story per user story. Again the first thing that happened was that my first attempt implemented a lot of more than I was expecting so it kind of grabbed I think there was scope creep because I had a lot of context in the context window and it grabbed the other user stories and started implementing which is not what I intended but anyway, after that I told Claude to be a bit more discerning on the user stories and to just implement what's in the scope of the user story even if it means coding stuff in which will change in the next user story after that things went a bit better and okay let's do.
-– The main thing that impressed me was the TDD flow itself. The agent pretty much always did what he was told at the TDD guardian file I was impressed by that
+## Development Process Summary
 
-– I didn't make great use of the other agents this time such as the PR review agent
-– I also would definitely connect to the hub to the Claude so I don't have to so I can just upload my user stories as issues for example
-– Had some specific instructions about how I want Claude to handle each user story so that it always enters a planning mode then you know tracks things internally actually what happened here was it? Didn't the first user story? Did it stuck very closely to the plan working in progress learning structure then after that, I didn't do it at all for all the other user stories implemented and then
+**The Process:**
+- Testing an agentic TDD development workflow with Claude Code
+- Voice-to-text requirements → loose plan → [user stories](project_context/plan.md)
+- Used specialized [agents](https://github.com/citypaul/.dotfiles/tree/main/claude/.claude) from `.claude/agents/` folder (contributed by experienced TDD practitioner)
 
-– I'll pass I'd like improvements. I'd like to pass over this code with maybe some other agents because I just rushed I didn't review things as thoroughly as I'd like to.
+**Initial Issues:**
+- User stories weren't perfectly defined (rushed the planning phase)
+- First implementation had scope creep - I think Claude grabbed multiple user stories from context window and implemented more than intended
+- Had to explicitly instruct Claude to only implement what's in scope for current user story, even if code will change later
 
-Sometimes it didn't sometimes it did not enter the or use the program guardian agent which I expected to use all the time
+**What Worked:**
+- TDD Guardian agent always enforced RED-GREEN-REFACTOR cycle
+- Agent reliably followed [TDD instructions](project_context/plan.md#agent-workflow-per-ticket) throughout development
 
-Claude also behaves differently between sessions sometimes asking me for or micromanaging me to allow us to do everything other times just going off and doing the task by itself
-```
+**What Didn't Work Consistently:**
+- Didn't make full use of PR Reviewer agent
+- Progress Guardian only worked for 1st and 11th user story (PLAN.md/WIP.md/LEARNINGS.md structure), then stopped being used, not sure why it was partial invoked (although seemed to be used on bigger changes)
+- Claude's behavior varied between sessions - sometimes autonomous, sometimes requesting approval for every action
+- US-11 specifically was more pedantic/manual than other features (unclear if due to feature complexity or context state)
+
+**Next Time:**
+- Take more time defining precise, well-scoped user stories upfront
+- Connect GitHub integration for issue tracking
+- Thorough code review pass before finalizing
 
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/3d3600f3-e4bc-4231-8415-b3cffcf38119" />
 
