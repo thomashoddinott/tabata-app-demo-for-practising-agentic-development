@@ -16,6 +16,9 @@ Voice to text of my thoughts, then I'll tidy up:
 Sometimes it didn't sometimes it did not enter the or use the program guardian agent which I expected to use all the time
 ```
 
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/3d3600f3-e4bc-4231-8415-b3cffcf38119" />
+
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
