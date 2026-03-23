@@ -13,11 +13,6 @@
 
 **What Worked:**
 - TDD Guardian agent always enforced RED-GREEN-REFACTOR cycle
-
-<p align="center" width="100%">
-    <img width="800" alt="image" src="https://github.com/user-attachments/assets/3d3600f3-e4bc-4231-8415-b3cffcf38119" />
-</p>
-
 - Always entered planning mode, launched subagents (always? or only for larger tasks?)
 
 <p align="center" width="100%">
